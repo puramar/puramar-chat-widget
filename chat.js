@@ -1,355 +1,199 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puramar Chat</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+// Puramar Chat Widget - Versão Livre de Conflitos
+(function() {
+    "use strict";
+    
+    console.log("Puramar Chat iniciado");
+    
+    // Configurações
+    var API_URL = "https://puramar-ai.onrender.com/chat/web";
+    
+    // Estado do chat
+    var chatState = {
+        userId: null,
+        history: []
+    };
+    
+    // Inicializa o user ID
+    try {
+        chatState.userId = localStorage.getItem("puramar_chat_user_id") || "web_" + Date.now();
+        localStorage.setItem("puramar_chat_user_id", chatState.userId);
+    } catch (e) {
+        chatState.userId = "web_" + Date.now();
+    }
+
+    // Aguarda o DOM carregar
+    function initChat() {
+        console.log("Iniciando elementos do chat");
         
-        :root {
-            --puramar-primary-color: #AEE0F4;
-            --puramar-primary-hover: #9acde7;
-            --puramar-text-dark: #1E1E1E;
-            --puramar-text-light: #5a6678;
-            --puramar-background-light: #FFFFFF;
-            --puramar-background-grey: #f3f4f6;
-            --puramar-border-color: #e5e7eb;
+        // Busca elementos
+        var chatInput = document.querySelector(".chat-input");
+        var sendButton = document.querySelector(".icon-send-button");
+        var messagesDisplay = document.querySelector(".messages-display");
+        var homeView = document.querySelector(".home-view");
+        var chatView = document.querySelector(".chat-view");
+        var typingIndicator = document.querySelector(".typing-indicator");
+        var backButton = document.querySelector(".back-btn");
+        var closeButton = document.querySelector(".close-btn");
+        var headerHome = document.querySelector(".header-content-home");
+        var headerChat = document.querySelector(".header-content-chat");
+        
+        console.log("Elementos encontrados:", {
+            chatInput: !!chatInput,
+            sendButton: !!sendButton,
+            homeView: !!homeView,
+            chatView: !!chatView
+        });
+
+        // Função para mudar views
+        function changeView(viewName) {
+            console.log("Mudando para view:", viewName);
+            
+            if (viewName === "chat") {
+                if (homeView) homeView.style.display = "none";
+                if (chatView) chatView.style.display = "flex";
+                if (headerHome) headerHome.style.display = "none";
+                if (headerChat) headerChat.style.display = "flex";
+                console.log("Mudou para chat");
+            } else {
+                if (homeView) homeView.style.display = "flex";
+                if (chatView) chatView.style.display = "none";
+                if (headerHome) headerHome.style.display = "flex";
+                if (headerChat) headerChat.style.display = "none";
+                console.log("Mudou para home");
+            }
         }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: transparent;
+        // Função para adicionar mensagem
+        function addMessage(sender, text) {
+            console.log("Adicionando mensagem:", sender);
+            
+            if (!messagesDisplay) return;
+            
+            var msgGroup = document.createElement("div");
+            msgGroup.className = "message-group " + sender;
+            
+            if (sender === "agent") {
+                var msgInfo = document.createElement("div");
+                msgInfo.className = "message-info";
+                msgInfo.textContent = "Puramar";
+                msgGroup.appendChild(msgInfo);
+            }
+            
+            var msgBubble = document.createElement("div");
+            msgBubble.className = "message-bubble " + sender;
+            msgBubble.innerHTML = text.replace(/\n/g, "<br>");
+            
+            msgGroup.appendChild(msgBubble);
+            messagesDisplay.appendChild(msgGroup);
+            messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        // Função para enviar mensagem
+        function sendMessage(text) {
+            if (!text) text = chatInput ? chatInput.value.trim() : "";
+            if (!text) return;
+            
+            console.log("Enviando:", text);
+            
+            changeView("chat");
+            addMessage("user", text);
+            chatState.history.push({ role: "user", content: text });
+            
+            if (chatInput) {
+                chatInput.value = "";
+                chatInput.style.height = "auto";
+            }
+            if (sendButton) sendButton.classList.remove("visible");
+            if (typingIndicator) typingIndicator.style.display = "block";
 
-        .chat-widget-window {
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--puramar-background-light);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* Header */
-        .header-container {
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .chat-window-header {
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: var(--puramar-primary-color);
-            color: var(--puramar-text-dark);
-        }
-
-        .header-logo {
-            height: 32px;
-            width: auto;
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 600;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .header-button {
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            color: var(--puramar-text-dark);
-            width: 24px;
-            height: 24px;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Body */
-        .chat-body {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .home-view, .chat-view {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        /* Home View */
-        .home-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 24px 16px 0;
-        }
-
-        .home-view h1 {
-            font-size: 22px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            color: var(--puramar-text-dark);
-        }
-
-        .home-view p {
-            font-size: 15px;
-            margin: 0 0 24px 0;
-            color: var(--puramar-text-light);
-        }
-
-        .suggestion-button {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 16px;
-            margin-bottom: 12px;
-            border: 1px solid var(--puramar-border-color);
-            border-radius: 16px;
-            background-color: var(--puramar-background-light);
-            font-size: 15px;
-            font-weight: 500;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .suggestion-button:hover {
-            background-color: var(--puramar-background-grey);
-        }
-
-        .suggestion-button .chevron-icon {
-            width: 20px;
-            height: 20px;
-            color: var(--puramar-text-light);
-        }
-
-        /* Chat View */
-        .messages-display {
-            flex-grow: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .message-group {
-            display: flex;
-            flex-direction: column;
-            max-width: 85%;
-            margin-bottom: 10px;
-        }
-
-        .message-group.user {
-            align-self: flex-end;
-        }
-
-        .message-group.agent {
-            align-self: flex-start;
-        }
-
-        .message-bubble {
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-size: 15px;
-            line-height: 1.5;
-        }
-
-        .message-bubble.user {
-            background-color: var(--puramar-primary-color);
-            color: var(--puramar-text-dark);
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-bubble.agent {
-            background-color: var(--puramar-background-grey);
-            color: var(--puramar-text-dark);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-info {
-            font-size: 12px;
-            color: var(--puramar-text-light);
-            padding: 4px 8px 0;
-        }
-
-        /* Typing Indicator */
-        .typing-indicator {
-            padding: 10px 16px;
-            font-style: italic;
-            color: var(--puramar-text-light);
-            background-image: linear-gradient(90deg, var(--puramar-text-light), var(--puramar-primary-hover), var(--puramar-text-light));
-            background-size: 200% 100%;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            animation: wave 2s linear infinite;
-        }
-
-        @keyframes wave {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Input Area */
-        .chat-input-area {
-            padding: 12px 16px;
-            background-color: var(--puramar-background-light);
-            flex-shrink: 0;
-            border-top: 1px solid var(--puramar-border-color);
-        }
-
-        .chat-input-wrapper {
-            display: flex;
-            align-items: flex-end;
-            background-color: var(--puramar-background-grey);
-            border-radius: 16px;
-            padding: 8px;
-        }
-
-        .chat-input-wrapper textarea {
-            flex-grow: 1;
-            border: none;
-            background: transparent;
-            padding: 4px 8px;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            resize: none;
-            max-height: 100px;
-            line-height: 1.5;
-            color: var(--puramar-text-dark);
-        }
-
-        .chat-input-wrapper textarea:focus {
-            outline: none;
-        }
-
-        .chat-input-wrapper textarea::placeholder {
-            color: var(--puramar-text-light);
-        }
-
-        .icon-send-button {
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            color: var(--puramar-primary-color);
-            transition: all 0.2s ease;
-            opacity: 0;
-            transform: scale(0.8);
-            pointer-events: none;
-        }
-
-        .icon-send-button.visible {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        .icon-send-button:hover {
-            color: var(--puramar-primary-hover);
-        }
-
-        /* Scrollbar hiding */
-        .home-content::-webkit-scrollbar,
-        .messages-display::-webkit-scrollbar {
-            display: none;
-        }
-
-        .home-content,
-        .messages-display {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-</head>
-<body>
-    <script>
-        console.log('🌐 Puramar Chat HTML iniciado');
-    </script>
-
-    <div class="chat-widget-window">
-        <div class="header-container">
-            <header class="chat-window-header">
-                <div class="header-content-home">
-                    <img src="https://cdn.shopify.com/s/files/1/0884/3344/1199/files/puramar-ai-logo.png?v=1721855243" alt="Puramar" class="header-logo" />
-                </div>
-                <div class="header-content-chat" style="display: none;">
-                    <button type="button" class="header-button back-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-                <h2 class="header-title">Chat Puramar</h2>
-                <button type="button" class="header-button close-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </header>
-        </div>
-
-        <main class="chat-body">
-            <!-- Home View -->
-            <div class="home-view">
-                <div class="home-content">
-                    <h1>Chat Puramar</h1>
-                    <p>Bem-vinda! Como podemos te ajudar?</p>
+            // Faz requisição
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", API_URL, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (typingIndicator) typingIndicator.style.display = "none";
                     
-                    <button type="button" class="suggestion-button" data-suggestion="Qual é meu tipo de pele?">
-                        Qual é meu tipo de pele?
-                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/>
-                        </svg>
-                    </button>
+                    var reply = "Desculpe, não consegui conectar. Tente novamente. 💙";
                     
-                    <button type="button" class="suggestion-button" data-suggestion="Dúvidas sobre minha entrega">
-                        Dúvidas sobre minha entrega
-                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            reply = data.reply;
+                        } catch (e) {
+                            console.error("Erro JSON:", e);
+                        }
+                    }
+                    
+                    addMessage("agent", reply);
+                    chatState.history.push({ role: "assistant", content: reply });
+                }
+            };
+            
+            xhr.send(JSON.stringify({
+                message: text,
+                history: chatState.history.slice(0, -1),
+                user_id: chatState.userId
+            }));
+        }
 
-            <!-- Chat View -->
-            <div class="chat-view" style="display: none;">
-                <div class="messages-display"></div>
-                <div class="typing-indicator" style="display: none;">Puramar AI está escrevendo...</div>
-            </div>
-        </main>
+        // Event listeners
+        if (chatInput) {
+            chatInput.addEventListener("input", function() {
+                var hasText = chatInput.value.trim() !== "";
+                if (sendButton) {
+                    sendButton.classList.toggle("visible", hasText);
+                }
+                chatInput.style.height = "auto";
+                chatInput.style.height = chatInput.scrollHeight + "px";
+            });
+            
+            chatInput.addEventListener("keypress", function(e) {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+        
+        if (sendButton) {
+            sendButton.addEventListener("click", function() {
+                sendMessage();
+            });
+        }
+        
+        // Botões de sugestão
+        var suggestionButtons = document.querySelectorAll(".suggestion-button");
+        for (var i = 0; i < suggestionButtons.length; i++) {
+            suggestionButtons[i].addEventListener("click", function() {
+                var suggestion = this.getAttribute("data-suggestion");
+                console.log("Sugestão clicada:", suggestion);
+                sendMessage(suggestion);
+            });
+        }
+        
+        if (backButton) {
+            backButton.addEventListener("click", function() {
+                changeView("home");
+            });
+        }
+        
+        if (closeButton) {
+            closeButton.addEventListener("click", function() {
+                console.log("Fechando chat");
+                window.parent.postMessage("toggle-chat-close", "*");
+            });
+        }
 
-        <!-- Input Area (visible in both views) -->
-        <div class="chat-input-area">
-            <div class="chat-input-wrapper">
-                <textarea class="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
-                <button type="button" class="icon-send-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3.4,20.3,22.1,12,3.4,3.7A1,1,0,0,0,2,5.2V10l7.1,2L2,14v4.8A1,1,0,0,0,3.4,20.3Z"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
+        console.log("Chat configurado com sucesso");
+    }
 
-    <script src="chat.js"></script>
-</body>
-</html>
+    // Inicializa quando DOM estiver pronto
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initChat);
+    } else {
+        initChat();
+    }
+
+})();
