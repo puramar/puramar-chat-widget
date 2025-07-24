@@ -85,11 +85,16 @@
             background-color: rgba(30, 30, 30, 0.1);
         }
 
-        /* CORREÇÃO: Botão X sempre visível */
-        .close-btn {
+        /* CORREÇÃO: Botões sempre visíveis */
+        .close-btn, .back-btn {
             display: flex !important;
             visibility: visible !important;
             opacity: 1 !important;
+        }
+
+        /* CORREÇÃO: Header content sempre visível */
+        .header-content-home, .header-content-chat {
+            display: block !important;
         }
 
         /* Body */
@@ -359,16 +364,36 @@
                 font-size: 16px;
             }
 
-            /* CORREÇÃO MOBILE: Botão X mais visível */
+            /* CORREÇÃO MOBILE: Botões mais visíveis e destacados */
             .header-button {
-                width: 32px;
-                height: 32px;
-                padding: 6px;
+                width: 36px !important;
+                height: 36px !important;
+                padding: 8px !important;
+                background-color: rgba(30, 30, 30, 0.1) !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
 
+            .header-button svg {
+                width: 20px !important;
+                height: 20px !important;
+                stroke-width: 2.5 !important;
+            }
+
+            /* CORREÇÃO: Botão voltar sempre visível no chat */
+            .back-btn {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            /* CORREÇÃO: Botão X sempre visível na home */
             .close-btn {
-                background-color: rgba(30, 30, 30, 0.1) !important;
-                border-radius: 6px !important;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
             .home-content {
@@ -436,8 +461,14 @@
             }
 
             .header-button {
-                width: 30px;
-                height: 30px;
+                width: 32px !important;
+                height: 32px !important;
+                padding: 6px !important;
+            }
+
+            .header-button svg {
+                width: 18px !important;
+                height: 18px !important;
             }
         }
 
@@ -463,6 +494,11 @@
                 margin-bottom: 8px;
                 min-height: 44px;
             }
+
+            .header-button {
+                width: 32px !important;
+                height: 32px !important;
+            }
         }
     </style>
 </head>
@@ -474,9 +510,11 @@
     <div class="chat-widget-window">
         <div class="header-container">
             <header class="chat-window-header">
+                <!-- CORREÇÃO: Logo sempre visível -->
                 <div class="header-content-home">
                     <img src="./puramar-ai-logo.png" alt="Puramar" class="header-logo" />
                 </div>
+                <!-- CORREÇÃO: Botão voltar sempre visível quando necessário -->
                 <div class="header-content-chat" style="display: none;">
                     <button type="button" class="header-button back-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
