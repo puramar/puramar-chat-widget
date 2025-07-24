@@ -1,4 +1,4 @@
-// Puramar Chat Widget - Versão Corrigida
+// Puramar Chat Widget - Versão Final Corrigida
 (function() {
     "use strict";
     
@@ -27,7 +27,7 @@
     function initChat() {
         console.log("Iniciando elementos do chat");
         
-        // Busca elementos
+        // Busca elementos - CORRIGIDO
         elements = {
             chatInput: document.querySelector(".chat-input"),
             sendButton: document.querySelector(".icon-send-button"),
@@ -46,7 +46,9 @@
             chatInput: !!elements.chatInput,
             sendButton: !!elements.sendButton,
             homeView: !!elements.homeView,
-            chatView: !!elements.chatView
+            chatView: !!elements.chatView,
+            backButton: !!elements.backButton,
+            closeButton: !!elements.closeButton
         });
         
         if (!elements.chatInput || !elements.sendButton || !elements.homeView || !elements.chatView) {
@@ -63,18 +65,26 @@
         // Configura input
         setupInput();
         
+        // Garante que inicia na view home
+        changeView("home");
+        
         console.log("Chat configurado com sucesso");
     }
     
-    // CORREÇÃO: Função para trocar views melhorada
+    // CORREÇÃO: Função para trocar views completamente corrigida
     function changeView(viewName) {
         console.log("Mudando para view:", viewName);
         
+        // Esconde todas as views primeiro
+        if (elements.homeView) elements.homeView.style.display = "none";
+        if (elements.chatView) elements.chatView.style.display = "none";
+        if (elements.headerContentHome) elements.headerContentHome.style.display = "none";
+        if (elements.headerContentChat) elements.headerContentChat.style.display = "none";
+        
         if (viewName === "home") {
-            elements.homeView.style.display = "flex";
-            elements.chatView.style.display = "none";
-            elements.headerContentHome.style.display = "block";
-            elements.headerContentChat.style.display = "none";
+            // Mostra home view
+            if (elements.homeView) elements.homeView.style.display = "flex";
+            if (elements.headerContentHome) elements.headerContentHome.style.display = "block";
             
             // Limpa mensagens ao voltar para home
             if (elements.messagesDisplay) {
@@ -82,15 +92,24 @@
             }
             chatState.history = [];
             
+            // Esconde indicador de digitação
+            showTypingIndicator(false);
+            
         } else if (viewName === "chat") {
-            elements.homeView.style.display = "none";
-            elements.chatView.style.display = "flex";
-            elements.headerContentHome.style.display = "none";
-            elements.headerContentChat.style.display = "block";
+            // Mostra chat view
+            if (elements.chatView) elements.chatView.style.display = "flex";
+            if (elements.headerContentChat) elements.headerContentChat.style.display = "block";
+            
+            // Foca no input após um pequeno delay
+            setTimeout(function() {
+                if (elements.chatInput) {
+                    elements.chatInput.focus();
+                }
+            }, 100);
         }
         
         chatState.currentView = viewName;
-        console.log("Mudou para", viewName);
+        console.log("View alterada para:", viewName);
     }
     
     // Função para renderizar Markdown simples
@@ -151,14 +170,14 @@
         }
     }
     
-    // CORREÇÃO: Função para enviar mensagem melhorada
+    // CORREÇÃO: Função para enviar mensagem totalmente corrigida
     function sendMessage(text) {
         if (!text) text = elements.chatInput ? elements.chatInput.value.trim() : "";
         if (!text) return;
         
-        console.log("Enviando:", text);
+        console.log("Enviando mensagem:", text);
         
-        // CORREÇÃO: Sempre muda para view de chat ao enviar mensagem
+        // SEMPRE muda para view de chat ao enviar mensagem
         changeView("chat");
         
         // Adiciona mensagem do usuário
@@ -167,16 +186,24 @@
         // Limpa input
         if (elements.chatInput) {
             elements.chatInput.value = "";
+            elements.chatInput.style.height = "auto"; // Reset altura
             updateSendButton();
         }
         
         // Mostra indicador de digitação
         showTypingIndicator(true);
         
-        // CORREÇÃO: Melhor tratamento de erro da API
+        // Prepara dados para API
+        var data = {
+            user_id: chatState.userId,
+            message_history: chatState.history
+        };
+        
+        // CORREÇÃO: Melhor tratamento de requisição
         var xhr = new XMLHttpRequest();
         xhr.open("POST", API_URL, true);
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.timeout = 30000; // 30 segundos
         
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
@@ -189,7 +216,7 @@
                         var response = JSON.parse(xhr.responseText);
                         if (response.reply) {
                             reply = response.reply;
-                            console.log("Resposta recebida do CrmAgent:", reply);
+                            console.log("Resposta recebida:", reply);
                         }
                     } catch (e) {
                         console.error("Erro ao processar resposta:", e);
@@ -202,22 +229,19 @@
                     reply = "Serviço temporariamente indisponível. Tente novamente em alguns minutos. 🤍";
                 }
                 
-                // Adiciona resposta
+                // Adiciona resposta do agente
                 addMessage(reply, "agent");
             }
         };
         
-        // CORREÇÃO: Timeout para requisições longas
-        xhr.timeout = 30000; // 30 segundos
         xhr.ontimeout = function() {
             showTypingIndicator(false);
             addMessage("A resposta está demorando mais que o esperado. Tente novamente. 🤍", "agent");
         };
         
-        // Dados para enviar
-        var data = {
-            user_id: chatState.userId,
-            message_history: chatState.history
+        xhr.onerror = function() {
+            showTypingIndicator(false);
+            addMessage("Erro de conexão. Verifique sua internet e tente novamente. 🤍", "agent");
         };
         
         xhr.send(JSON.stringify(data));
@@ -255,50 +279,58 @@
             }
         });
         
-        // Foco inicial quando muda para chat
-        setTimeout(function() {
-            if (elements.chatInput && chatState.currentView === "chat") {
-                elements.chatInput.focus();
-            }
-        }, 100);
+        // Placeholder dinâmico baseado na view
+        elements.chatInput.setAttribute("placeholder", "Digite sua mensagem...");
     }
     
-    // Função para configurar event listeners
+    // CORREÇÃO: Event listeners completamente corrigidos
     function setupEventListeners() {
         // Botão de envio
         if (elements.sendButton) {
-            elements.sendButton.addEventListener("click", function() {
+            elements.sendButton.addEventListener("click", function(e) {
+                e.preventDefault();
+                console.log("Botão enviar clicado");
                 sendMessage();
             });
         }
         
-        // CORREÇÃO: Botões de sugestão vão direto para o chat
+        // Botões de sugestão - vão direto para o chat
         elements.suggestionButtons.forEach(function(button) {
-            button.addEventListener("click", function() {
+            button.addEventListener("click", function(e) {
+                e.preventDefault();
                 var suggestion = this.getAttribute("data-suggestion");
                 console.log("Sugestão clicada:", suggestion);
-                sendMessage(suggestion);
+                if (suggestion) {
+                    sendMessage(suggestion);
+                }
             });
         });
         
-        // Botão voltar
+        // Botão voltar - CORRIGIDO
         if (elements.backButton) {
-            elements.backButton.addEventListener("click", function() {
-                console.log("⬅️ Botão voltar clicado");
+            elements.backButton.addEventListener("click", function(e) {
+                e.preventDefault();
+                console.log("Botão voltar clicado");
                 changeView("home");
             });
         }
         
-        // CORREÇÃO: Botão fechar sempre funciona
+        // Botão fechar - CORRIGIDO
         if (elements.closeButton) {
-            elements.closeButton.addEventListener("click", function() {
-                console.log("❌ Botão fechar clicado");
-                // Envia mensagem para o parent (Shopify)
-                if (window.parent && window.parent !== window) {
-                    window.parent.postMessage("toggle-chat-close", "*");
-                } else {
-                    // Fallback se não estiver em iframe
-                    window.close();
+            elements.closeButton.addEventListener("click", function(e) {
+                e.preventDefault();
+                console.log("Botão fechar clicado");
+                
+                // Envia mensagem para o parent (widget principal)
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage("toggle-chat-close", "*");
+                    } else {
+                        // Fallback
+                        window.close();
+                    }
+                } catch (err) {
+                    console.log("Erro ao comunicar com parent:", err);
                 }
             });
         }
@@ -332,7 +364,8 @@
             historyLength: chatState.history.length,
             isTyping: chatState.isTyping,
             elementsFound: Object.keys(elements).filter(key => !!elements[key]).length,
-            apiUrl: API_URL
+            apiUrl: API_URL,
+            elements: elements
         };
     }
     
@@ -347,4 +380,3 @@
     }
     
 })();
-
