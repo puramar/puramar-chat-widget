@@ -111,6 +111,7 @@
             color: var(--puramar-text-light);
         }
 
+        /* CORREÇÃO: Botões de sugestão não cortados */
         .suggestion-button {
             display: flex;
             justify-content: space-between;
@@ -127,6 +128,9 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: 'Poppins', sans-serif;
+            min-height: 60px; /* CORREÇÃO: altura mínima */
+            word-wrap: break-word; /* CORREÇÃO: quebra de texto */
+            white-space: normal; /* CORREÇÃO: permite quebra de linha */
         }
 
         .suggestion-button:hover {
@@ -137,6 +141,8 @@
             width: 20px;
             height: 20px;
             color: var(--puramar-text-light);
+            flex-shrink: 0; /* CORREÇÃO: não encolhe o ícone */
+            margin-left: 8px; /* CORREÇÃO: espaço do texto */
         }
 
         /* Chat View */
@@ -215,7 +221,78 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* RESPONSIVO MOBILE - Campo de input corrigido */
+        /* Input Area */
+        .chat-input-area {
+            padding: 12px 16px;
+            background-color: var(--puramar-background-light);
+            flex-shrink: 0;
+            border-top: 1px solid var(--puramar-border-color);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            background-color: var(--puramar-background-grey);
+            border-radius: 16px;
+            padding: 8px;
+        }
+
+        .chat-input-wrapper textarea {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            padding: 4px 8px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            resize: none;
+            max-height: 100px;
+            line-height: 1.5;
+            color: var(--puramar-text-dark);
+        }
+
+        .chat-input-wrapper textarea:focus {
+            outline: none;
+        }
+
+        .chat-input-wrapper textarea::placeholder {
+            color: var(--puramar-text-light);
+        }
+
+        .icon-send-button {
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--puramar-primary-color);
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .icon-send-button.visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .icon-send-button:hover {
+            color: var(--puramar-primary-hover);
+        }
+
+        /* Scrollbar hiding */
+        .home-content::-webkit-scrollbar,
+        .messages-display::-webkit-scrollbar {
+            display: none;
+        }
+
+        .home-content,
+        .messages-display {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* RESPONSIVO MOBILE - Mantendo sua versão que funciona */
         @media screen and (max-width: 480px) {
             * {
                 -webkit-overflow-scrolling: touch;
@@ -340,11 +417,15 @@
                 margin-bottom: 20px;
             }
             
+            /* CORREÇÃO MOBILE: Botões não cortados */
             .suggestion-button {
                 padding: 14px 16px;
                 font-size: 14px;
                 margin-bottom: 10px;
                 border-radius: 12px;
+                min-height: 56px !important; /* CORREÇÃO: altura mínima mobile */
+                white-space: normal !important; /* CORREÇÃO: permite quebra */
+                word-wrap: break-word !important; /* CORREÇÃO: quebra palavras longas */
             }
             
             .message-bubble {
@@ -383,78 +464,8 @@
             .suggestion-button {
                 padding: 12px 14px;
                 font-size: 13px;
+                min-height: 52px !important; /* CORREÇÃO: altura mínima para telas muito pequenas */
             }
-        }
-
-        /* Input Area */
-        .chat-input-area {
-            padding: 12px 16px;
-            background-color: var(--puramar-background-light);
-            flex-shrink: 0;
-            border-top: 1px solid var(--puramar-border-color);
-        }
-
-        .chat-input-wrapper {
-            display: flex;
-            align-items: flex-end;
-            background-color: var(--puramar-background-grey);
-            border-radius: 16px;
-            padding: 8px;
-        }
-
-        .chat-input-wrapper textarea {
-            flex-grow: 1;
-            border: none;
-            background: transparent;
-            padding: 4px 8px;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            resize: none;
-            max-height: 100px;
-            line-height: 1.5;
-            color: var(--puramar-text-dark);
-        }
-
-        .chat-input-wrapper textarea:focus {
-            outline: none;
-        }
-
-        .chat-input-wrapper textarea::placeholder {
-            color: var(--puramar-text-light);
-        }
-
-        .icon-send-button {
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            color: var(--puramar-primary-color);
-            transition: all 0.2s ease;
-            opacity: 0;
-            transform: scale(0.8);
-            pointer-events: none;
-        }
-
-        .icon-send-button.visible {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        .icon-send-button:hover {
-            color: var(--puramar-primary-hover);
-        }
-
-        /* Scrollbar hiding */
-        .home-content::-webkit-scrollbar,
-        .messages-display::-webkit-scrollbar {
-            display: none;
-        }
-
-        .home-content,
-        .messages-display {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
     </style>
 </head>
