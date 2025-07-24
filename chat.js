@@ -1,4 +1,4 @@
-// Puramar Chat Widget - SEU CÓDIGO + Correções Pontuais
+// Puramar Chat Widget - Versão Otimizada e Robusta
 (function() {
     "use strict";
     
@@ -10,235 +10,328 @@
     // Estado do chat
     var chatState = {
         userId: null,
-        history: []
+        history: [],
+        currentView: "home",
+        isTyping: false
     };
     
-    // Inicializa o user ID
-    try {
-        chatState.userId = localStorage.getItem("puramar_chat_user_id") || "web_" + Date.now();
-        localStorage.setItem("puramar_chat_user_id", chatState.userId);
-    } catch (e) {
-        chatState.userId = "web_" + Date.now();
+    // Elementos DOM
+    var elements = {};
+    
+    // Gera ID único para o usuário
+    function generateUserId() {
+        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
-
+    
     // Aguarda o DOM carregar
     function initChat() {
         console.log("Iniciando elementos do chat");
         
         // Busca elementos
-        var chatInput = document.querySelector(".chat-input");
-        var sendButton = document.querySelector(".icon-send-button");
-        var messagesDisplay = document.querySelector(".messages-display");
-        var homeView = document.querySelector(".home-view");
-        var chatView = document.querySelector(".chat-view");
-        var typingIndicator = document.querySelector(".typing-indicator");
-        var backButton = document.querySelector(".back-btn");
-        var closeButton = document.querySelector(".close-btn");
-        var headerHome = document.querySelector(".header-content-home");
-        var headerChat = document.querySelector(".header-content-chat");
-        var chatInputArea = document.querySelector(".chat-input-area");
-        var chatInputWrapper = document.querySelector(".chat-input-wrapper");
+        elements = {
+            chatInput: document.querySelector(".chat-input"),
+            sendButton: document.querySelector(".icon-send-button"),
+            homeView: document.querySelector(".home-view"),
+            chatView: document.querySelector(".chat-view"),
+            messagesDisplay: document.querySelector(".messages-display"),
+            typingIndicator: document.querySelector(".typing-indicator"),
+            suggestionButtons: document.querySelectorAll(".suggestion-button"),
+            backButton: document.querySelector(".back-btn"),
+            closeButton: document.querySelector(".close-btn"),
+            headerContentHome: document.querySelector(".header-content-home"),
+            headerContentChat: document.querySelector(".header-content-chat")
+        };
         
         console.log("Elementos encontrados:", {
-            chatInput: !!chatInput,
-            sendButton: !!sendButton,
-            homeView: !!homeView,
-            chatView: !!chatView,
-            chatInputArea: !!chatInputArea,
-            chatInputWrapper: !!chatInputWrapper
+            chatInput: !!elements.chatInput,
+            sendButton: !!elements.sendButton,
+            homeView: !!elements.homeView,
+            chatView: !!elements.chatView
         });
         
-        // Força visibilidade do input em mobile
-        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile && chatInputArea) {
-            chatInputArea.style.display = "block";
-            chatInputArea.style.visibility = "visible";
-            chatInputArea.style.opacity = "1";
-            console.log("Input área forçada para mobile");
-        }
-
-        // Função para mudar views (SUA VERSÃO + correção de limpeza)
-        function changeView(viewName) {
-            console.log("Mudando para view:", viewName);
-            
-            if (viewName === "chat") {
-                if (homeView) homeView.style.display = "none";
-                if (chatView) chatView.style.display = "flex";
-                if (headerHome) headerHome.style.display = "none";
-                if (headerChat) headerChat.style.display = "flex";
-                console.log("Mudou para chat");
-            } else {
-                if (homeView) homeView.style.display = "flex";
-                if (chatView) chatView.style.display = "none";
-                if (headerHome) headerHome.style.display = "flex";
-                if (headerChat) headerChat.style.display = "none";
-                console.log("Mudou para home");
-                
-                // CORREÇÃO: Limpa mensagens ao voltar para home
-                if (messagesDisplay) {
-                    messagesDisplay.innerHTML = "";
-                    console.log("✅ Mensagens limpas");
-                }
-            }
-        }
-
-        // CORREÇÃO: Função para converter Markdown melhorada
-        function renderMarkdown(text) {
-            // Converte links em formato **[texto](url)** para HTML
-            text = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '<a href="$2" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: 500;">$1</a>');
-            
-            // Converte texto em negrito **texto**
-            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            
-            // Converte quebras de linha
-            text = text.replace(/\n/g, '<br>');
-            
-            return text;
-        }
-
-        // Função para adicionar mensagem (SUA VERSÃO + correção do renderMarkdown)
-        function addMessage(sender, text) {
-            console.log("Adicionando mensagem:", sender);
-            
-            if (!messagesDisplay) return;
-            
-            var msgGroup = document.createElement("div");
-            msgGroup.className = "message-group " + sender;
-            
-            if (sender === "agent") {
-                var msgInfo = document.createElement("div");
-                msgInfo.className = "message-info";
-                msgInfo.textContent = "Puramar";
-                msgGroup.appendChild(msgInfo);
-            }
-            
-            var msgBubble = document.createElement("div");
-            msgBubble.className = "message-bubble " + sender;
-            
-            // CORREÇÃO: Renderiza Markdown MELHORADO para mensagens do agente
-            if (sender === "agent") {
-                msgBubble.innerHTML = renderMarkdown(text);
-            } else {
-                msgBubble.innerHTML = text.replace(/\n/g, "<br>");
-            }
-            
-            msgGroup.appendChild(msgBubble);
-            messagesDisplay.appendChild(msgGroup);
-            messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
-        }
-
-        // Função para enviar mensagem (SUA VERSÃO + correção do coração)
-        function sendMessage(text) {
-            if (!text) text = chatInput ? chatInput.value.trim() : "";
-            if (!text) return;
-            
-            console.log("Enviando:", text);
-            
-            changeView("chat");
-            addMessage("user", text);
-            chatState.history.push({ role: "user", content: text });
-            
-            if (chatInput) {
-                chatInput.value = "";
-                chatInput.style.height = "auto";
-            }
-            if (sendButton) sendButton.classList.remove("visible");
-            if (typingIndicator) typingIndicator.style.display = "block";
-
-            // Requisição para API
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", API_URL, true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (typingIndicator) typingIndicator.style.display = "none";
-                    
-                    // CORREÇÃO: Coração branco em caso de erro
-                    var reply = "Desculpe, não consegui conectar. Tente novamente. 🤍";
-                    
-                    if (xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText);
-                            reply = data.reply;
-                            console.log("Resposta recebida do CrmAgent:", reply);
-                        } catch (e) {
-                            console.error("Erro JSON:", e);
-                        }
-                    } else {
-                        console.error("Erro CORS/API:", xhr.status);
-                    }
-                    
-                    addMessage("agent", reply);
-                    chatState.history.push({ role: "assistant", content: reply });
-                }
-            };
-            
-            xhr.send(JSON.stringify({
-                message: text,
-                history: chatState.history.slice(0, -1),
-                user_id: chatState.userId
-            }));
-        }
-
-        // Event listeners (SUA VERSÃO - mantida igual)
-        if (chatInput) {
-            chatInput.addEventListener("input", function() {
-                var hasText = chatInput.value.trim() !== "";
-                if (sendButton) {
-                    sendButton.classList.toggle("visible", hasText);
-                }
-                chatInput.style.height = "auto";
-                chatInput.style.height = chatInput.scrollHeight + "px";
-            });
-            
-            chatInput.addEventListener("keypress", function(e) {
-                if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
+        if (!elements.chatInput || !elements.sendButton || !elements.homeView || !elements.chatView) {
+            console.error("Elementos essenciais não encontrados");
+            return;
         }
         
-        if (sendButton) {
-            sendButton.addEventListener("click", function() {
+        // Inicializa estado
+        chatState.userId = generateUserId();
+        
+        // Configura event listeners
+        setupEventListeners();
+        
+        // Configura input
+        setupInput();
+        
+        console.log("Chat configurado com sucesso");
+    }
+    
+    // Função para trocar views
+    function changeView(viewName) {
+        console.log("Mudando para view:", viewName);
+        
+        if (viewName === "home") {
+            elements.homeView.style.display = "flex";
+            elements.chatView.style.display = "none";
+            elements.headerContentHome.style.display = "block";
+            elements.headerContentChat.style.display = "none";
+            
+            // Limpa mensagens ao voltar para home
+            if (elements.messagesDisplay) {
+                elements.messagesDisplay.innerHTML = "";
+            }
+            chatState.history = [];
+            
+        } else if (viewName === "chat") {
+            elements.homeView.style.display = "none";
+            elements.chatView.style.display = "flex";
+            elements.headerContentHome.style.display = "none";
+            elements.headerContentChat.style.display = "block";
+        }
+        
+        chatState.currentView = viewName;
+        console.log("Mudou para", viewName);
+    }
+    
+    // Função para renderizar Markdown simples
+    function renderMarkdown(text) {
+        // Converte links em formato **[texto](url)** para HTML
+        text = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        
+        // Converte texto em negrito **texto**
+        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        
+        // Converte quebras de linha
+        text = text.replace(/\n/g, '<br>');
+        
+        return text;
+    }
+    
+    // Função para adicionar mensagem
+    function addMessage(text, sender) {
+        console.log("Adicionando mensagem:", sender);
+        
+        if (!elements.messagesDisplay) return;
+        
+        var messageGroup = document.createElement("div");
+        messageGroup.className = "message-group " + sender;
+        
+        var messageBubble = document.createElement("div");
+        messageBubble.className = "message-bubble " + sender;
+        
+        // Renderiza Markdown apenas para mensagens do agente
+        if (sender === "agent") {
+            messageBubble.innerHTML = renderMarkdown(text);
+        } else {
+            messageBubble.textContent = text;
+        }
+        
+        messageGroup.appendChild(messageBubble);
+        elements.messagesDisplay.appendChild(messageGroup);
+        
+        // Scroll para baixo
+        elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
+        
+        // Adiciona ao histórico
+        chatState.history.push({
+            role: sender === "user" ? "user" : "model",
+            parts: [text]
+        });
+    }
+    
+    // Função para mostrar/esconder indicador de digitação
+    function showTypingIndicator(show) {
+        if (!elements.typingIndicator) return;
+        
+        elements.typingIndicator.style.display = show ? "block" : "none";
+        chatState.isTyping = show;
+        
+        if (show && elements.messagesDisplay) {
+            elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
+        }
+    }
+    
+    // Função para enviar mensagem
+    function sendMessage(text) {
+        if (!text) text = elements.chatInput ? elements.chatInput.value.trim() : "";
+        if (!text) return;
+        
+        console.log("Enviando:", text);
+        
+        // Muda para view de chat se não estiver
+        if (chatState.currentView !== "chat") {
+            changeView("chat");
+        }
+        
+        // Adiciona mensagem do usuário
+        addMessage(text, "user");
+        
+        // Limpa input
+        if (elements.chatInput) {
+            elements.chatInput.value = "";
+            updateSendButton();
+        }
+        
+        // Mostra indicador de digitação
+        showTypingIndicator(true);
+        
+        // Envia para API
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", API_URL, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                showTypingIndicator(false);
+                
+                var reply = "Desculpe, não consegui processar sua mensagem no momento. Tente novamente em alguns instantes. 🤍";
+                
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.reply) {
+                            reply = response.reply;
+                            console.log("Resposta recebida do CrmAgent:", reply);
+                        }
+                    } catch (e) {
+                        console.error("Erro ao processar resposta:", e);
+                    }
+                } else {
+                    console.error("Erro na requisição:", xhr.status, xhr.statusText);
+                }
+                
+                // Adiciona resposta
+                addMessage(reply, "agent");
+            }
+        };
+        
+        // Dados para enviar
+        var data = {
+            user_id: chatState.userId,
+            message_history: chatState.history
+        };
+        
+        xhr.send(JSON.stringify(data));
+    }
+    
+    // Função para atualizar botão de envio
+    function updateSendButton() {
+        if (!elements.sendButton || !elements.chatInput) return;
+        
+        var hasText = elements.chatInput.value.trim().length > 0;
+        
+        if (hasText) {
+            elements.sendButton.classList.add("visible");
+        } else {
+            elements.sendButton.classList.remove("visible");
+        }
+    }
+    
+    // Função para configurar input
+    function setupInput() {
+        if (!elements.chatInput) return;
+        
+        // Auto-resize do textarea
+        elements.chatInput.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 100) + "px";
+            updateSendButton();
+        });
+        
+        // Enter para enviar (Shift+Enter para nova linha)
+        elements.chatInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Foco inicial
+        setTimeout(function() {
+            if (elements.chatInput && chatState.currentView === "chat") {
+                elements.chatInput.focus();
+            }
+        }, 100);
+    }
+    
+    // Função para configurar event listeners
+    function setupEventListeners() {
+        // Botão de envio
+        if (elements.sendButton) {
+            elements.sendButton.addEventListener("click", function() {
                 sendMessage();
             });
         }
         
-        // Botões de sugestão (SUA VERSÃO - mantida igual)
-        var suggestionButtons = document.querySelectorAll(".suggestion-button");
-        for (var i = 0; i < suggestionButtons.length; i++) {
-            suggestionButtons[i].addEventListener("click", function() {
+        // Botões de sugestão
+        elements.suggestionButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
                 var suggestion = this.getAttribute("data-suggestion");
                 console.log("Sugestão clicada:", suggestion);
                 sendMessage(suggestion);
             });
-        }
+        });
         
-        // CORREÇÃO: Botão voltar agora limpa mensagens
-        if (backButton) {
-            backButton.addEventListener("click", function() {
+        // Botão voltar
+        if (elements.backButton) {
+            elements.backButton.addEventListener("click", function() {
                 console.log("⬅️ Botão voltar clicado");
-                changeView("home"); // Já limpa as mensagens dentro desta função
+                changeView("home");
             });
         }
         
-        if (closeButton) {
-            closeButton.addEventListener("click", function() {
-                console.log("Fechando chat");
-                window.parent.postMessage("toggle-chat-close", "*");
+        // Botão fechar
+        if (elements.closeButton) {
+            elements.closeButton.addEventListener("click", function() {
+                console.log("❌ Botão fechar clicado");
+                // Envia mensagem para o parent (Shopify)
+                if (window.parent) {
+                    window.parent.postMessage("toggle-chat-close", "*");
+                }
             });
         }
-
-        console.log("Chat configurado com sucesso");
+        
+        // Listener para mensagens do parent
+        window.addEventListener("message", function(event) {
+            if (event.data === "focus-input" && elements.chatInput) {
+                elements.chatInput.focus();
+            }
+        });
+        
+        // Previne zoom no iOS ao focar input
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            if (elements.chatInput) {
+                elements.chatInput.addEventListener("focus", function() {
+                    this.style.fontSize = "16px";
+                });
+                
+                elements.chatInput.addEventListener("blur", function() {
+                    this.style.fontSize = "";
+                });
+            }
+        }
     }
-
-    // Inicializa quando DOM estiver pronto (SUA VERSÃO - mantida igual)
+    
+    // Função para debug
+    function debugInfo() {
+        return {
+            currentView: chatState.currentView,
+            userId: chatState.userId,
+            historyLength: chatState.history.length,
+            isTyping: chatState.isTyping,
+            elementsFound: Object.keys(elements).filter(key => !!elements[key]).length
+        };
+    }
+    
+    // Expõe função de debug globalmente
+    window.puramarChatDebug = debugInfo;
+    
+    // Inicialização
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initChat);
     } else {
         initChat();
     }
-
+    
 })();
+
