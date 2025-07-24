@@ -84,7 +84,7 @@
         if (viewName === "home") {
             // Mostra home view
             if (elements.homeView) elements.homeView.style.display = "flex";
-            if (elements.headerContentHome) elements.headerContentHome.style.display = "block";
+            if (elements.headerContentHome) elements.headerContentHome.style.display = "flex";
             
             // Limpa mensagens ao voltar para home
             if (elements.messagesDisplay) {
@@ -98,7 +98,7 @@
         } else if (viewName === "chat") {
             // Mostra chat view
             if (elements.chatView) elements.chatView.style.display = "flex";
-            if (elements.headerContentChat) elements.headerContentChat.style.display = "block";
+            if (elements.headerContentChat) elements.headerContentChat.style.display = "flex";
             
             // Foca no input após um pequeno delay
             setTimeout(function() {
@@ -170,6 +170,24 @@
         }
     }
     
+    // CORREÇÃO: Função para processar sequência de mensagens
+    function processMessageSequence(messages, delay = 2000) {
+        if (!messages || messages.length === 0) return;
+        
+        messages.forEach(function(message, index) {
+            setTimeout(function() {
+                showTypingIndicator(true);
+                
+                // Pequeno delay para mostrar "digitando"
+                setTimeout(function() {
+                    showTypingIndicator(false);
+                    addMessage(message, "agent");
+                }, 1000);
+                
+            }, delay * index);
+        });
+    }
+    
     // CORREÇÃO: Função para enviar mensagem totalmente corrigida
     function sendMessage(text) {
         if (!text) text = elements.chatInput ? elements.chatInput.value.trim() : "";
@@ -210,13 +228,20 @@
                 showTypingIndicator(false);
                 
                 var reply = "Desculpe, estou com dificuldades técnicas no momento. Tente novamente em alguns instantes. 🤍";
+                var sequence = [];
                 
                 if (xhr.status === 200) {
                     try {
                         var response = JSON.parse(xhr.responseText);
                         if (response.reply) {
                             reply = response.reply;
+                            sequence = response.sequence || [];
                             console.log("Resposta recebida:", reply);
+                            
+                            // Se tem sequência, é tópico rápido
+                            if (response.is_quick_topic && sequence.length > 0) {
+                                console.log("Processando sequência de", sequence.length, "mensagens");
+                            }
                         }
                     } catch (e) {
                         console.error("Erro ao processar resposta:", e);
@@ -229,8 +254,13 @@
                     reply = "Serviço temporariamente indisponível. Tente novamente em alguns minutos. 🤍";
                 }
                 
-                // Adiciona resposta do agente
+                // Adiciona primeira resposta
                 addMessage(reply, "agent");
+                
+                // Processa sequência se existir
+                if (sequence.length > 0) {
+                    processMessageSequence(sequence, 2500);
+                }
             }
         };
         
