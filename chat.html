@@ -79,16 +79,18 @@
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
             flex-shrink: 0;
         }
 
         .header-button:hover {
-            background-color: rgba(30, 30, 30, 0.1);
+            background-color: rgba(30, 30, 30, 0.08);
+            transform: scale(1.05);
         }
 
         .header-button:active {
-            background-color: rgba(30, 30, 30, 0.2);
+            background-color: rgba(30, 30, 30, 0.15);
+            transform: scale(0.95);
         }
 
         .header-button svg {
@@ -98,6 +100,13 @@
         }
 
         /* Header Content - CORRIGIDO */
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+        }
+
         .header-content-home {
             display: flex;
             align-items: center;
@@ -379,7 +388,21 @@
                 width: 36px;
                 height: 36px;
                 padding: 6px;
+            }
+
+            .header-left, .header-right {
+                width: 36px;
+                height: 36px;
+            }
+
+            .header-button:hover {
                 background-color: rgba(30, 30, 30, 0.08);
+                transform: scale(1.05);
+            }
+
+            .header-button:active {
+                background-color: rgba(30, 30, 30, 0.15);
+                transform: scale(0.95);
             }
 
             .header-button svg {
@@ -458,6 +481,21 @@
                 padding: 4px;
             }
 
+            .header-left, .header-right {
+                width: 32px;
+                height: 32px;
+            }
+
+            .header-button:hover {
+                background-color: rgba(30, 30, 30, 0.08);
+                transform: scale(1.05);
+            }
+
+            .header-button:active {
+                background-color: rgba(30, 30, 30, 0.15);
+                transform: scale(0.95);
+            }
+
             .header-button svg {
                 width: 18px;
                 height: 18px;
@@ -491,6 +529,21 @@
                 width: 32px;
                 height: 32px;
             }
+
+            .header-left, .header-right {
+                width: 32px;
+                height: 32px;
+            }
+
+            .header-button:hover {
+                background-color: rgba(30, 30, 30, 0.08);
+                transform: scale(1.05);
+            }
+
+            .header-button:active {
+                background-color: rgba(30, 30, 30, 0.15);
+                transform: scale(0.95);
+            }
         }
     </style>
 </head>
@@ -502,29 +555,35 @@
     <div class="chat-widget-window">
         <div class="header-container">
             <header class="chat-window-header">
-                <!-- Header Content Home - CORRIGIDO -->
-                <div class="header-content-home">
-                    <img src="https://puramar.github.io/puramar-chat-widget/puramar-ai-logo.png" alt="Puramar" class="header-logo" />
+                <!-- Side esquerdo do header -->
+                <div class="header-left">
+                    <!-- Logo - apenas na home -->
+                    <div class="header-content-home">
+                        <img src="https://puramar.github.io/puramar-chat-widget/puramar-ai-logo.png" alt="Puramar" class="header-logo" />
+                    </div>
+                    
+                    <!-- Botão voltar - apenas no chat -->
+                    <div class="header-content-chat">
+                        <button type="button" class="header-button back-btn" title="Voltar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 
-                <!-- Header Content Chat - CORRIGIDO -->
-                <div class="header-content-chat">
-                    <button type="button" class="header-button back-btn" title="Voltar">
+                <!-- Título no centro -->
+                <h2 class="header-title">Chat Puramar</h2>
+                
+                <!-- Botão Fechar - sempre à direita -->
+                <div class="header-right">
+                    <button type="button" class="header-button close-btn" title="Fechar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polyline points="15 18 9 12 15 6"></polyline>
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                 </div>
-                
-                <h2 class="header-title">Chat Puramar</h2>
-                
-                <!-- Botão Fechar - Sempre visível -->
-                <button type="button" class="header-button close-btn" title="Fechar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
             </header>
         </div>
 
