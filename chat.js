@@ -1,4 +1,4 @@
-// Puramar Chat Widget - v10 (Lógica Segura para Iframe)
+// Puramar Chat Widget - v11 (Lógica de UI e API Corrigida)
 (function() {
     var API_URL = 'https://puramar-ai.onrender.com/chat/web';
     var chatState = {
@@ -33,11 +33,12 @@
         msgGroup.className = 'message-group ' + sender;
         var msgBubble = document.createElement('div');
         msgBubble.className = 'message-bubble ' + sender;
-        msgBubble.innerHTML = text.replace(/\n/g, '  ');
+        msgBubble.innerHTML = text.replace(/\n/g, '  
+');
         if (sender === 'agent') {
             var msgInfo = document.createElement('div');
             msgInfo.className = 'message-info';
-            msgInfo.textContent = 'Puramar AI';
+            msgInfo.textContent = 'Puramar'; // Nome corrigido
             msgGroup.appendChild(msgInfo);
         }
         msgGroup.appendChild(msgBubble);
@@ -45,9 +46,12 @@
         elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
     }
 
-    function sendMessage() {
-        var text = elements.input.value.trim();
+    function sendMessage(textOverride) {
+        // CORREÇÃO: Usa o textOverride ou o valor do input
+        var text = textOverride || elements.input.value.trim();
         if (!text) return;
+
+        switchView('chat'); // Garante que a visão mude para o chat
         addMessage('user', text);
         chatState.history.push({ role: 'user', content: text });
         elements.input.value = '';
@@ -84,13 +88,11 @@
         elements.input.style.height = 'auto';
         elements.input.style.height = elements.input.scrollHeight + 'px';
     });
-    elements.sendButton.addEventListener('click', sendMessage);
+    elements.sendButton.addEventListener('click', function() { sendMessage(); });
     elements.input.addEventListener('keypress', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     elements.suggestionButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
-            switchView('chat');
-            elements.input.value = btn.getAttribute('data-suggestion');
-            sendMessage();
+            sendMessage(btn.getAttribute('data-suggestion'));
         });
     });
     elements.backButton.addEventListener('click', function() { switchView('home'); });
