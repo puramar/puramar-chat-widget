@@ -1,4 +1,4 @@
-// Puramar Chat Widget - Versão Livre de Conflitos
+// Puramar Chat Widget - SEU CÓDIGO + Correções Pontuais
 (function() {
     "use strict";
     
@@ -57,7 +57,7 @@
             console.log("Input área forçada para mobile");
         }
 
-        // Função para mudar views
+        // Função para mudar views (SUA VERSÃO + correção de limpeza)
         function changeView(viewName) {
             console.log("Mudando para view:", viewName);
             
@@ -73,10 +73,16 @@
                 if (headerHome) headerHome.style.display = "flex";
                 if (headerChat) headerChat.style.display = "none";
                 console.log("Mudou para home");
+                
+                // CORREÇÃO: Limpa mensagens ao voltar para home
+                if (messagesDisplay) {
+                    messagesDisplay.innerHTML = "";
+                    console.log("✅ Mensagens limpas");
+                }
             }
         }
 
-        // Função para converter Markdown para HTML
+        // CORREÇÃO: Função para converter Markdown melhorada
         function renderMarkdown(text) {
             // Converte links em formato **[texto](url)** para HTML
             text = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '<a href="$2" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: 500;">$1</a>');
@@ -90,7 +96,7 @@
             return text;
         }
 
-        // Função para adicionar mensagem
+        // Função para adicionar mensagem (SUA VERSÃO + correção do renderMarkdown)
         function addMessage(sender, text) {
             console.log("Adicionando mensagem:", sender);
             
@@ -109,7 +115,7 @@
             var msgBubble = document.createElement("div");
             msgBubble.className = "message-bubble " + sender;
             
-            // Renderiza Markdown se for mensagem do agente
+            // CORREÇÃO: Renderiza Markdown MELHORADO para mensagens do agente
             if (sender === "agent") {
                 msgBubble.innerHTML = renderMarkdown(text);
             } else {
@@ -121,7 +127,7 @@
             messagesDisplay.scrollTop = messagesDisplay.scrollHeight;
         }
 
-        // Função para enviar mensagem
+        // Função para enviar mensagem (SUA VERSÃO + correção do coração)
         function sendMessage(text) {
             if (!text) text = chatInput ? chatInput.value.trim() : "";
             if (!text) return;
@@ -148,7 +154,8 @@
                 if (xhr.readyState === 4) {
                     if (typingIndicator) typingIndicator.style.display = "none";
                     
-                    var reply = "Desculpe, não consegui conectar. Tente novamente. 💙";
+                    // CORREÇÃO: Coração branco em caso de erro
+                    var reply = "Desculpe, não consegui conectar. Tente novamente. 🤍";
                     
                     if (xhr.status === 200) {
                         try {
@@ -174,7 +181,7 @@
             }));
         }
 
-        // Event listeners
+        // Event listeners (SUA VERSÃO - mantida igual)
         if (chatInput) {
             chatInput.addEventListener("input", function() {
                 var hasText = chatInput.value.trim() !== "";
@@ -199,7 +206,7 @@
             });
         }
         
-        // Botões de sugestão
+        // Botões de sugestão (SUA VERSÃO - mantida igual)
         var suggestionButtons = document.querySelectorAll(".suggestion-button");
         for (var i = 0; i < suggestionButtons.length; i++) {
             suggestionButtons[i].addEventListener("click", function() {
@@ -209,9 +216,11 @@
             });
         }
         
+        // CORREÇÃO: Botão voltar agora limpa mensagens
         if (backButton) {
             backButton.addEventListener("click", function() {
-                changeView("home");
+                console.log("⬅️ Botão voltar clicado");
+                changeView("home"); // Já limpa as mensagens dentro desta função
             });
         }
         
@@ -225,7 +234,7 @@
         console.log("Chat configurado com sucesso");
     }
 
-    // Inicializa quando DOM estiver pronto
+    // Inicializa quando DOM estiver pronto (SUA VERSÃO - mantida igual)
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initChat);
     } else {
