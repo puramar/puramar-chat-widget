@@ -1,4 +1,4 @@
-// Puramar Chat Widget - Versão Otimizada e Robusta
+// Puramar Chat Widget - Versão Corrigida
 (function() {
     "use strict";
     
@@ -66,7 +66,7 @@
         console.log("Chat configurado com sucesso");
     }
     
-    // Função para trocar views
+    // CORREÇÃO: Função para trocar views melhorada
     function changeView(viewName) {
         console.log("Mudando para view:", viewName);
         
@@ -151,17 +151,15 @@
         }
     }
     
-    // Função para enviar mensagem
+    // CORREÇÃO: Função para enviar mensagem melhorada
     function sendMessage(text) {
         if (!text) text = elements.chatInput ? elements.chatInput.value.trim() : "";
         if (!text) return;
         
         console.log("Enviando:", text);
         
-        // Muda para view de chat se não estiver
-        if (chatState.currentView !== "chat") {
-            changeView("chat");
-        }
+        // CORREÇÃO: Sempre muda para view de chat ao enviar mensagem
+        changeView("chat");
         
         // Adiciona mensagem do usuário
         addMessage(text, "user");
@@ -175,7 +173,7 @@
         // Mostra indicador de digitação
         showTypingIndicator(true);
         
-        // Envia para API
+        // CORREÇÃO: Melhor tratamento de erro da API
         var xhr = new XMLHttpRequest();
         xhr.open("POST", API_URL, true);
         xhr.setRequestHeader("Content-Type", "application/json");
@@ -184,7 +182,7 @@
             if (xhr.readyState === 4) {
                 showTypingIndicator(false);
                 
-                var reply = "Desculpe, não consegui processar sua mensagem no momento. Tente novamente em alguns instantes. 🤍";
+                var reply = "Desculpe, estou com dificuldades técnicas no momento. Tente novamente em alguns instantes. 🤍";
                 
                 if (xhr.status === 200) {
                     try {
@@ -195,14 +193,25 @@
                         }
                     } catch (e) {
                         console.error("Erro ao processar resposta:", e);
+                        reply = "Houve um problema ao processar sua mensagem. Tente reformular sua pergunta. 🤍";
                     }
+                } else if (xhr.status === 0) {
+                    reply = "Sem conexão com o servidor. Verifique sua internet e tente novamente. 🤍";
                 } else {
                     console.error("Erro na requisição:", xhr.status, xhr.statusText);
+                    reply = "Serviço temporariamente indisponível. Tente novamente em alguns minutos. 🤍";
                 }
                 
                 // Adiciona resposta
                 addMessage(reply, "agent");
             }
+        };
+        
+        // CORREÇÃO: Timeout para requisições longas
+        xhr.timeout = 30000; // 30 segundos
+        xhr.ontimeout = function() {
+            showTypingIndicator(false);
+            addMessage("A resposta está demorando mais que o esperado. Tente novamente. 🤍", "agent");
         };
         
         // Dados para enviar
@@ -246,7 +255,7 @@
             }
         });
         
-        // Foco inicial
+        // Foco inicial quando muda para chat
         setTimeout(function() {
             if (elements.chatInput && chatState.currentView === "chat") {
                 elements.chatInput.focus();
@@ -263,7 +272,7 @@
             });
         }
         
-        // Botões de sugestão
+        // CORREÇÃO: Botões de sugestão vão direto para o chat
         elements.suggestionButtons.forEach(function(button) {
             button.addEventListener("click", function() {
                 var suggestion = this.getAttribute("data-suggestion");
@@ -280,13 +289,16 @@
             });
         }
         
-        // Botão fechar
+        // CORREÇÃO: Botão fechar sempre funciona
         if (elements.closeButton) {
             elements.closeButton.addEventListener("click", function() {
                 console.log("❌ Botão fechar clicado");
                 // Envia mensagem para o parent (Shopify)
-                if (window.parent) {
+                if (window.parent && window.parent !== window) {
                     window.parent.postMessage("toggle-chat-close", "*");
+                } else {
+                    // Fallback se não estiver em iframe
+                    window.close();
                 }
             });
         }
@@ -298,7 +310,7 @@
             }
         });
         
-        // Previne zoom no iOS ao focar input
+        // CORREÇÃO: Previne zoom no iOS ao focar input
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             if (elements.chatInput) {
                 elements.chatInput.addEventListener("focus", function() {
@@ -319,7 +331,8 @@
             userId: chatState.userId,
             historyLength: chatState.history.length,
             isTyping: chatState.isTyping,
-            elementsFound: Object.keys(elements).filter(key => !!elements[key]).length
+            elementsFound: Object.keys(elements).filter(key => !!elements[key]).length,
+            apiUrl: API_URL
         };
     }
     
