@@ -76,6 +76,20 @@
             }
         }
 
+        // Função para converter Markdown para HTML
+        function renderMarkdown(text) {
+            // Converte links em formato **[texto](url)** para HTML
+            text = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '<a href="$2" target="_blank" style="color: #3b82f6; text-decoration: underline; font-weight: 500;">$1</a>');
+            
+            // Converte texto em negrito **texto**
+            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            
+            // Converte quebras de linha
+            text = text.replace(/\n/g, '<br>');
+            
+            return text;
+        }
+
         // Função para adicionar mensagem
         function addMessage(sender, text) {
             console.log("Adicionando mensagem:", sender);
@@ -94,7 +108,13 @@
             
             var msgBubble = document.createElement("div");
             msgBubble.className = "message-bubble " + sender;
-            msgBubble.innerHTML = text.replace(/\n/g, "<br>");
+            
+            // Renderiza Markdown se for mensagem do agente
+            if (sender === "agent") {
+                msgBubble.innerHTML = renderMarkdown(text);
+            } else {
+                msgBubble.innerHTML = text.replace(/\n/g, "<br>");
+            }
             
             msgGroup.appendChild(msgBubble);
             messagesDisplay.appendChild(msgGroup);
@@ -119,7 +139,7 @@
             if (sendButton) sendButton.classList.remove("visible");
             if (typingIndicator) typingIndicator.style.display = "block";
 
-            // Faz requisição
+            // Requisição para API
             var xhr = new XMLHttpRequest();
             xhr.open("POST", API_URL, true);
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -134,9 +154,12 @@
                         try {
                             var data = JSON.parse(xhr.responseText);
                             reply = data.reply;
+                            console.log("Resposta recebida do CrmAgent:", reply);
                         } catch (e) {
                             console.error("Erro JSON:", e);
                         }
+                    } else {
+                        console.error("Erro CORS/API:", xhr.status);
                     }
                     
                     addMessage("agent", reply);
