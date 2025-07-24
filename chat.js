@@ -1,4 +1,4 @@
-// Puramar Chat Widget - v11 (Lógica de UI e API Corrigida)
+// Puramar Chat Widget - v12 (Lógica de UI e API Corrigida)
 (function() {
     var API_URL = 'https://puramar-ai.onrender.com/chat/web';
     var chatState = {
@@ -38,7 +38,7 @@
         if (sender === 'agent') {
             var msgInfo = document.createElement('div');
             msgInfo.className = 'message-info';
-            msgInfo.textContent = 'Puramar'; // Nome corrigido
+            msgInfo.textContent = 'Puramar';
             msgGroup.appendChild(msgInfo);
         }
         msgGroup.appendChild(msgBubble);
@@ -47,11 +47,10 @@
     }
 
     function sendMessage(textOverride) {
-        // CORREÇÃO: Usa o textOverride ou o valor do input
         var text = textOverride || elements.input.value.trim();
         if (!text) return;
 
-        switchView('chat'); // Garante que a visão mude para o chat
+        switchView('chat');
         addMessage('user', text);
         chatState.history.push({ role: 'user', content: text });
         elements.input.value = '';
@@ -88,13 +87,19 @@
         elements.input.style.height = 'auto';
         elements.input.style.height = elements.input.scrollHeight + 'px';
     });
+    
+    // CORREÇÃO: O botão de enviar agora chama a função sendMessage sem argumento
     elements.sendButton.addEventListener('click', function() { sendMessage(); });
+    
     elements.input.addEventListener('keypress', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    
     elements.suggestionButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
+            // CORREÇÃO: Passa o texto da sugestão diretamente para a função
             sendMessage(btn.getAttribute('data-suggestion'));
         });
     });
+
     elements.backButton.addEventListener('click', function() { switchView('home'); });
     elements.closeButton.addEventListener('click', function() { window.parent.postMessage('toggle-chat-close', '*'); });
     window.addEventListener('message', function(event) { if (event.data === 'open-chat') { window.parent.postMessage('toggle-chat-open', '*'); } });
