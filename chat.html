@@ -85,6 +85,13 @@
             background-color: rgba(30, 30, 30, 0.1);
         }
 
+        /* CORREÇÃO: Botão X sempre visível */
+        .close-btn {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
         /* Body */
         .chat-body {
             flex: 1;
@@ -351,6 +358,18 @@
             .header-title {
                 font-size: 16px;
             }
+
+            /* CORREÇÃO MOBILE: Botão X mais visível */
+            .header-button {
+                width: 32px;
+                height: 32px;
+                padding: 6px;
+            }
+
+            .close-btn {
+                background-color: rgba(30, 30, 30, 0.1) !important;
+                border-radius: 6px !important;
+            }
             
             .home-content {
                 padding: 16px 16px 12px;
@@ -415,6 +434,11 @@
                 font-size: 13px;
                 min-height: 52px;
             }
+
+            .header-button {
+                width: 30px;
+                height: 30px;
+            }
         }
 
         /* Landscape mobile */
@@ -461,6 +485,7 @@
                     </button>
                 </div>
                 <h2 class="header-title">Chat Puramar</h2>
+                <!-- CORREÇÃO: Botão X sempre visível -->
                 <button type="button" class="header-button close-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
