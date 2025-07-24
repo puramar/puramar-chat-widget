@@ -36,13 +36,26 @@
         var closeButton = document.querySelector(".close-btn");
         var headerHome = document.querySelector(".header-content-home");
         var headerChat = document.querySelector(".header-content-chat");
+        var chatInputArea = document.querySelector(".chat-input-area");
+        var chatInputWrapper = document.querySelector(".chat-input-wrapper");
         
         console.log("Elementos encontrados:", {
             chatInput: !!chatInput,
             sendButton: !!sendButton,
             homeView: !!homeView,
-            chatView: !!chatView
+            chatView: !!chatView,
+            chatInputArea: !!chatInputArea,
+            chatInputWrapper: !!chatInputWrapper
         });
+        
+        // Força visibilidade do input em mobile
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile && chatInputArea) {
+            chatInputArea.style.display = "block";
+            chatInputArea.style.visibility = "visible";
+            chatInputArea.style.opacity = "1";
+            console.log("Input área forçada para mobile");
+        }
 
         // Função para mudar views
         function changeView(viewName) {
