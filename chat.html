@@ -38,7 +38,7 @@
             flex-direction: column;
         }
 
-        /* Header */
+        /* Header - CORRIGIDO */
         .header-container {
             flex-shrink: 0;
         }
@@ -51,6 +51,7 @@
             background-color: var(--puramar-primary-color);
             color: var(--puramar-text-dark);
             position: relative;
+            min-height: 64px;
         }
 
         .header-logo {
@@ -69,32 +70,42 @@
         .header-button {
             background: none;
             border: none;
-            padding: 4px;
+            padding: 8px;
             cursor: pointer;
             color: var(--puramar-text-dark);
-            width: 28px;
-            height: 28px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
+            border-radius: 8px;
             transition: background-color 0.2s ease;
+            flex-shrink: 0;
         }
 
         .header-button:hover {
             background-color: rgba(30, 30, 30, 0.1);
         }
 
-        /* CORREÇÃO: Botões sempre visíveis */
-        .close-btn, .back-btn {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+        .header-button:active {
+            background-color: rgba(30, 30, 30, 0.2);
         }
 
-        /* CORREÇÃO: Header content sempre visível */
-        .header-content-home, .header-content-chat {
-            display: block !important;
+        .header-button svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+        }
+
+        /* Header Content - CORRIGIDO */
+        .header-content-home {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-content-chat {
+            display: none;
+            align-items: center;
         }
 
         /* Body */
@@ -110,6 +121,10 @@
             flex-direction: column;
             height: 100%;
             min-height: 0;
+        }
+
+        .chat-view {
+            display: none;
         }
 
         /* Home View */
@@ -229,16 +244,11 @@
             text-decoration: underline;
         }
 
-        .message-info {
-            font-size: 12px;
-            color: var(--puramar-text-light);
-            padding: 4px 8px 0;
-        }
-
         /* Typing Indicator */
         .typing-indicator {
             padding: 10px 16px;
             font-style: italic;
+            display: none;
         }
 
         .typing-text {
@@ -340,12 +350,12 @@
             background: var(--puramar-text-light);
         }
 
-        /* Mobile Responsivo - Otimizado */
+        /* Mobile Responsivo - OTIMIZADO */
         @media screen and (max-width: 480px) {
             .chat-widget-window {
                 width: 100vw;
                 height: 100vh;
-                height: 100dvh; /* Dynamic viewport height para mobile */
+                height: 100dvh;
             }
             
             .header-container {
@@ -354,6 +364,7 @@
             
             .chat-window-header {
                 padding: 12px 16px;
+                min-height: 60px;
             }
             
             .header-logo {
@@ -364,36 +375,17 @@
                 font-size: 16px;
             }
 
-            /* CORREÇÃO MOBILE: Botões mais visíveis e destacados */
             .header-button {
-                width: 36px !important;
-                height: 36px !important;
-                padding: 8px !important;
-                background-color: rgba(30, 30, 30, 0.1) !important;
-                border-radius: 8px !important;
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
+                width: 36px;
+                height: 36px;
+                padding: 6px;
+                background-color: rgba(30, 30, 30, 0.08);
             }
 
             .header-button svg {
-                width: 20px !important;
-                height: 20px !important;
-                stroke-width: 2.5 !important;
-            }
-
-            /* CORREÇÃO: Botão voltar sempre visível no chat */
-            .back-btn {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
-
-            /* CORREÇÃO: Botão X sempre visível na home */
-            .close-btn {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
+                width: 20px;
+                height: 20px;
+                stroke-width: 2.5;
             }
             
             .home-content {
@@ -461,14 +453,14 @@
             }
 
             .header-button {
-                width: 32px !important;
-                height: 32px !important;
-                padding: 6px !important;
+                width: 32px;
+                height: 32px;
+                padding: 4px;
             }
 
             .header-button svg {
-                width: 18px !important;
-                height: 18px !important;
+                width: 18px;
+                height: 18px;
             }
         }
 
@@ -496,8 +488,8 @@
             }
 
             .header-button {
-                width: 32px !important;
-                height: 32px !important;
+                width: 32px;
+                height: 32px;
             }
         }
     </style>
@@ -510,22 +502,25 @@
     <div class="chat-widget-window">
         <div class="header-container">
             <header class="chat-window-header">
-                <!-- CORREÇÃO: Logo sempre visível -->
+                <!-- Header Content Home - CORRIGIDO -->
                 <div class="header-content-home">
-                    <img src="./puramar-ai-logo.png" alt="Puramar" class="header-logo" />
+                    <img src="https://puramar.github.io/puramar-chat-widget/puramar-ai-logo.png" alt="Puramar" class="header-logo" />
                 </div>
-                <!-- CORREÇÃO: Botão voltar sempre visível quando necessário -->
-                <div class="header-content-chat" style="display: none;">
-                    <button type="button" class="header-button back-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                
+                <!-- Header Content Chat - CORRIGIDO -->
+                <div class="header-content-chat">
+                    <button type="button" class="header-button back-btn" title="Voltar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                             <polyline points="15 18 9 12 15 6"></polyline>
                         </svg>
                     </button>
                 </div>
+                
                 <h2 class="header-title">Chat Puramar</h2>
-                <!-- CORREÇÃO: Botão X sempre visível -->
-                <button type="button" class="header-button close-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                
+                <!-- Botão Fechar - Sempre visível -->
+                <button type="button" class="header-button close-btn" title="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -564,9 +559,9 @@
             </div>
 
             <!-- Chat View -->
-            <div class="chat-view" style="display: none;">
+            <div class="chat-view">
                 <div class="messages-display"></div>
-                <div class="typing-indicator" style="display: none;">
+                <div class="typing-indicator">
                     <span class="typing-text">Puramar AI está escrevendo...</span>
                 </div>
             </div>
@@ -576,7 +571,7 @@
         <div class="chat-input-area">
             <div class="chat-input-wrapper">
                 <textarea class="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
-                <button type="button" class="icon-send-button">
+                <button type="button" class="icon-send-button" title="Enviar">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3.4,20.3,22.1,12,3.4,3.7A1,1,0,0,0,2,5.2V10l7.1,2L2,14v4.8A1,1,0,0,0,3.4,20.3Z"/>
                     </svg>
@@ -585,7 +580,14 @@
         </div>
     </div>
 
-    <script src="chat.js"></script>
+    <script>
+        // Script de inicialização do chat será carregado externamente
+        if (typeof window.puramarChatDebug !== 'function') {
+            var script = document.createElement('script');
+            script.src = 'https://puramar.github.io/puramar-chat-widget/chat.js';
+            script.async = true;
+            document.head.appendChild(script);
+        }
+    </script>
 </body>
 </html>
-
