@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Puramar Chat</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
@@ -17,15 +17,17 @@
             --puramar-border-color: #e5e7eb;
         }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            background-color: transparent;
-        }
-
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            background-color: transparent;
+            height: 100%;
+            overflow: hidden;
         }
 
         .chat-widget-window {
@@ -34,12 +36,10 @@
             background-color: var(--puramar-background-light);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         /* Header */
         .header-container {
-            position: relative;
             flex-shrink: 0;
         }
 
@@ -50,6 +50,7 @@
             justify-content: space-between;
             background-color: var(--puramar-primary-color);
             color: var(--puramar-text-dark);
+            position: relative;
         }
 
         .header-logo {
@@ -68,34 +69,43 @@
         .header-button {
             background: none;
             border: none;
-            padding: 0;
+            padding: 4px;
             cursor: pointer;
             color: var(--puramar-text-dark);
-            width: 24px;
-            height: 24px;
-            position: relative;
-            z-index: 10;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .header-button:hover {
+            background-color: rgba(30, 30, 30, 0.1);
         }
 
         /* Body */
         .chat-body {
-            flex-grow: 1;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            min-height: 0;
         }
 
         .home-view, .chat-view {
             display: flex;
             flex-direction: column;
             height: 100%;
+            min-height: 0;
         }
 
         /* Home View */
         .home-content {
-            flex-grow: 1;
+            flex: 1;
             overflow-y: auto;
-            padding: 24px 16px 0;
+            padding: 24px 16px 16px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .home-view h1 {
@@ -111,7 +121,6 @@
             color: var(--puramar-text-light);
         }
 
-        /* CORREÇÃO: Botões de sugestão não cortados */
         .suggestion-button {
             display: flex;
             justify-content: space-between;
@@ -128,31 +137,39 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: 'Poppins', sans-serif;
-            min-height: 60px; /* CORREÇÃO: altura mínima */
-            word-wrap: break-word; /* CORREÇÃO: quebra de texto */
-            white-space: normal; /* CORREÇÃO: permite quebra de linha */
+            min-height: 60px;
+            word-wrap: break-word;
+            white-space: normal;
         }
 
         .suggestion-button:hover {
             background-color: var(--puramar-background-grey);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-button:active {
+            transform: translateY(0);
         }
 
         .suggestion-button .chevron-icon {
             width: 20px;
             height: 20px;
             color: var(--puramar-text-light);
-            flex-shrink: 0; /* CORREÇÃO: não encolhe o ícone */
-            margin-left: 8px; /* CORREÇÃO: espaço do texto */
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         /* Chat View */
         .messages-display {
-            flex-grow: 1;
+            flex: 1;
             padding: 16px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 4px;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
         }
 
         .message-group {
@@ -175,6 +192,7 @@
             border-radius: 20px;
             font-size: 15px;
             line-height: 1.5;
+            word-wrap: break-word;
         }
 
         .message-bubble.user {
@@ -189,13 +207,23 @@
             border-bottom-left-radius: 4px;
         }
 
+        .message-bubble a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .message-bubble a:hover {
+            text-decoration: underline;
+        }
+
         .message-info {
             font-size: 12px;
             color: var(--puramar-text-light);
             padding: 4px 8px 0;
         }
 
-        /* Typing Indicator - Gradiente + efeito suave */
+        /* Typing Indicator */
         .typing-indicator {
             padding: 10px 16px;
             font-style: italic;
@@ -203,7 +231,7 @@
 
         .typing-text {
             display: inline-block;
-            background-image: linear-gradient(90deg, var(--puramar-text-light), var(--puramar-primary-hover), var(--puramar-text-light));
+            background: linear-gradient(90deg, var(--puramar-text-light), var(--puramar-primary-hover), var(--puramar-text-light));
             background-size: 200% 100%;
             color: transparent;
             -webkit-background-clip: text;
@@ -238,7 +266,7 @@
         }
 
         .chat-input-wrapper textarea {
-            flex-grow: 1;
+            flex: 1;
             border: none;
             background: transparent;
             padding: 4px 8px;
@@ -248,9 +276,6 @@
             max-height: 100px;
             line-height: 1.5;
             color: var(--puramar-text-dark);
-        }
-
-        .chat-input-wrapper textarea:focus {
             outline: none;
         }
 
@@ -278,55 +303,45 @@
 
         .icon-send-button:hover {
             color: var(--puramar-primary-hover);
+            transform: scale(1.1);
         }
 
-        /* Scrollbar hiding */
+        /* Scrollbar styling */
         .home-content::-webkit-scrollbar,
         .messages-display::-webkit-scrollbar {
-            display: none;
+            width: 4px;
         }
 
-        .home-content,
-        .messages-display {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .home-content::-webkit-scrollbar-track,
+        .messages-display::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        /* RESPONSIVO MOBILE - Mantendo sua versão que funciona */
+        .home-content::-webkit-scrollbar-thumb,
+        .messages-display::-webkit-scrollbar-thumb {
+            background: var(--puramar-border-color);
+            border-radius: 2px;
+        }
+
+        .home-content::-webkit-scrollbar-thumb:hover,
+        .messages-display::-webkit-scrollbar-thumb:hover {
+            background: var(--puramar-text-light);
+        }
+
+        /* Mobile Responsivo - Otimizado */
         @media screen and (max-width: 480px) {
-            * {
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            body, html {
-                width: 100vw !important;
-                height: 100vh !important;
-                overflow-x: hidden !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            
             .chat-widget-window {
-                width: 100vw !important;
-                height: 100vh !important;
-                border-radius: 0 !important;
-                max-height: none !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                display: flex !important;
-                flex-direction: column !important;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height para mobile */
             }
             
             .header-container {
-                flex-shrink: 0 !important;
                 padding-top: env(safe-area-inset-top, 0px);
             }
             
             .chat-window-header {
-                padding: 16px 16px 12px 16px;
+                padding: 12px 16px;
             }
             
             .header-logo {
@@ -337,74 +352,8 @@
                 font-size: 16px;
             }
             
-            .chat-body {
-                flex-grow: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                overflow: hidden !important;
-                min-height: 0 !important;
-            }
-            
-            .home-view, .chat-view {
-                height: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
-                min-height: 0 !important;
-            }
-            
             .home-content {
-                flex-grow: 1 !important;
-                padding: 16px 16px 0;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
-                min-height: 0 !important;
-            }
-            
-            .messages-display {
-                flex-grow: 1 !important;
-                padding: 12px 16px;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch;
-                min-height: 0 !important;
-            }
-            
-            .chat-input-area {
-                flex-shrink: 0 !important;
-                padding: 8px 16px !important;
-                padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px)) !important;
-                background-color: var(--puramar-background-light) !important;
-                border-top: 1px solid var(--puramar-border-color) !important;
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                z-index: 100 !important;
-            }
-            
-            .chat-input-wrapper {
-                padding: 8px 12px !important;
-                display: flex !important;
-                align-items: flex-end !important;
-                background-color: var(--puramar-background-grey) !important;
-                border-radius: 16px !important;
-            }
-            
-            .chat-input-wrapper textarea {
-                flex-grow: 1 !important;
-                font-size: 14px !important;
-                padding: 6px 8px !important;
-                border: none !important;
-                background: transparent !important;
-                resize: none !important;
-                max-height: 100px !important;
-                line-height: 1.5 !important;
-                font-family: 'Poppins', sans-serif !important;
-            }
-            
-            .icon-send-button {
-                padding: 4px !important;
-                cursor: pointer !important;
-                color: var(--puramar-primary-color) !important;
+                padding: 16px 16px 12px;
             }
             
             .home-view h1 {
@@ -417,15 +366,16 @@
                 margin-bottom: 20px;
             }
             
-            /* CORREÇÃO MOBILE: Botões não cortados */
             .suggestion-button {
                 padding: 14px 16px;
                 font-size: 14px;
                 margin-bottom: 10px;
                 border-radius: 12px;
-                min-height: 56px !important; /* CORREÇÃO: altura mínima mobile */
-                white-space: normal !important; /* CORREÇÃO: permite quebra */
-                word-wrap: break-word !important; /* CORREÇÃO: quebra palavras longas */
+                min-height: 56px;
+            }
+            
+            .messages-display {
+                padding: 12px 16px;
             }
             
             .message-bubble {
@@ -438,24 +388,23 @@
                 padding: 8px 16px;
                 font-size: 13px;
             }
-        }
-        
-        /* Chrome iOS específico - Input garantido */
-        @supports (-webkit-touch-callout: none) {
-            @media screen and (max-width: 480px) {
-                .chat-input-area {
-                    position: relative !important;
-                    bottom: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    width: 100% !important;
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                }
+            
+            .chat-input-area {
+                padding: 8px 16px;
+                padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));
+            }
+            
+            .chat-input-wrapper {
+                padding: 8px 12px;
+            }
+            
+            .chat-input-wrapper textarea {
+                font-size: 14px;
+                padding: 6px 8px;
             }
         }
-        
+
+        /* Telas muito pequenas */
         @media screen and (max-width: 360px) {
             .home-view h1 {
                 font-size: 18px;
@@ -464,7 +413,31 @@
             .suggestion-button {
                 padding: 12px 14px;
                 font-size: 13px;
-                min-height: 52px !important; /* CORREÇÃO: altura mínima para telas muito pequenas */
+                min-height: 52px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            .home-content {
+                padding: 12px 16px 8px;
+            }
+            
+            .home-view h1 {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+            
+            .home-view p {
+                font-size: 13px;
+                margin-bottom: 16px;
+            }
+            
+            .suggestion-button {
+                padding: 10px 14px;
+                font-size: 13px;
+                margin-bottom: 8px;
+                min-height: 44px;
             }
         }
     </style>
@@ -536,7 +509,7 @@
             </div>
         </main>
 
-        <!-- Input Area (visible in both views) -->
+        <!-- Input Area -->
         <div class="chat-input-area">
             <div class="chat-input-wrapper">
                 <textarea class="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
@@ -552,3 +525,4 @@
     <script src="chat.js"></script>
 </body>
 </html>
+
