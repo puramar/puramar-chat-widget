@@ -38,7 +38,7 @@
             flex-direction: column;
         }
 
-        /* Header - CORRIGIDO */
+        /* Header */
         .header-container {
             flex-shrink: 0;
         }
@@ -99,7 +99,7 @@
             stroke-width: 2;
         }
 
-        /* Header Content - CORRIGIDO */
+        /* Header Content */
         .header-left, .header-right {
             display: flex;
             align-items: center;
@@ -280,12 +280,15 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Input Area */
+        /* Input Area - CORREÇÃO PRINCIPAL */
         .chat-input-area {
             padding: 12px 16px;
             background-color: var(--puramar-background-light);
             flex-shrink: 0;
             border-top: 1px solid var(--puramar-border-color);
+            /* CORREÇÃO: Garante que input sempre está visível */
+            position: relative;
+            z-index: 10;
         }
 
         .chat-input-wrapper {
@@ -294,6 +297,8 @@
             background-color: var(--puramar-background-grey);
             border-radius: 16px;
             padding: 8px;
+            /* CORREÇÃO: Altura mínima para mobile */
+            min-height: 48px;
         }
 
         .chat-input-wrapper textarea {
@@ -308,6 +313,8 @@
             line-height: 1.5;
             color: var(--puramar-text-dark);
             outline: none;
+            /* CORREÇÃO: Altura mínima para mobile */
+            min-height: 32px;
         }
 
         .chat-input-wrapper textarea::placeholder {
@@ -359,16 +366,22 @@
             background: var(--puramar-text-light);
         }
 
-        /* Mobile Responsivo - OTIMIZADO */
+        /* CORREÇÃO PRINCIPAL: Mobile Responsivo Melhorado */
         @media screen and (max-width: 480px) {
             .chat-widget-window {
                 width: 100vw;
                 height: 100vh;
                 height: 100dvh;
+                /* CORREÇÃO: Layout mais estável */
+                display: flex;
+                flex-direction: column;
             }
             
             .header-container {
                 padding-top: env(safe-area-inset-top, 0px);
+                /* CORREÇÃO: Header fixo no mobile */
+                position: relative;
+                z-index: 20;
             }
             
             .chat-window-header {
@@ -393,16 +406,6 @@
             .header-left, .header-right {
                 width: 36px;
                 height: 36px;
-            }
-
-            .header-button:hover {
-                background-color: rgba(30, 30, 30, 0.08);
-                transform: scale(1.05);
-            }
-
-            .header-button:active {
-                background-color: rgba(30, 30, 30, 0.15);
-                transform: scale(0.95);
             }
 
             .header-button svg {
@@ -435,6 +438,8 @@
             
             .messages-display {
                 padding: 12px 16px;
+                /* CORREÇÃO: Garante espaço para input no mobile */
+                padding-bottom: 4px;
             }
             
             .message-bubble {
@@ -448,18 +453,48 @@
                 font-size: 13px;
             }
             
+            /* CORREÇÃO PRINCIPAL: Input area mobile */
             .chat-input-area {
                 padding: 8px 16px;
                 padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));
+                /* CORREÇÃO: Garante que input está sempre acessível */
+                position: relative;
+                z-index: 30;
+                background-color: var(--puramar-background-light);
+                border-top: 1px solid var(--puramar-border-color);
+                /* CORREÇÃO: Altura mínima garantida */
+                min-height: 64px;
             }
             
             .chat-input-wrapper {
                 padding: 8px 12px;
+                /* CORREÇÃO: Altura mínima para área de toque */
+                min-height: 48px;
+                margin-bottom: 0;
             }
             
             .chat-input-wrapper textarea {
-                font-size: 14px;
-                padding: 6px 8px;
+                font-size: 16px; /* Previne zoom no iOS */
+                padding: 8px;
+                /* CORREÇÃO: Altura adequada para mobile */
+                min-height: 32px;
+                line-height: 1.4;
+            }
+
+            /* CORREÇÃO: Garante layout estável quando teclado abre */
+            .chat-view {
+                /* CORREÇÃO: Permite que o layout se ajuste */
+                height: 100%;
+                max-height: 100vh;
+                max-height: 100dvh;
+            }
+
+            .chat-body {
+                /* CORREÇÃO: Flexbox que se adapta ao teclado */
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
             }
         }
 
@@ -486,23 +521,25 @@
                 height: 32px;
             }
 
-            .header-button:hover {
-                background-color: rgba(30, 30, 30, 0.08);
-                transform: scale(1.05);
-            }
-
-            .header-button:active {
-                background-color: rgba(30, 30, 30, 0.15);
-                transform: scale(0.95);
-            }
-
             .header-button svg {
                 width: 18px;
                 height: 18px;
             }
+
+            /* CORREÇÃO: Input em telas muito pequenas */
+            .chat-input-area {
+                min-height: 60px;
+                padding: 6px 12px;
+                padding-bottom: calc(6px + env(safe-area-inset-bottom, 6px));
+            }
+
+            .chat-input-wrapper {
+                min-height: 44px;
+                padding: 6px 10px;
+            }
         }
 
-        /* Landscape mobile */
+        /* CORREÇÃO: Landscape mobile */
         @media screen and (max-height: 500px) and (orientation: landscape) {
             .home-content {
                 padding: 12px 16px 8px;
@@ -535,14 +572,18 @@
                 height: 32px;
             }
 
-            .header-button:hover {
-                background-color: rgba(30, 30, 30, 0.08);
-                transform: scale(1.05);
+            /* CORREÇÃO: Input em landscape */
+            .chat-input-area {
+                min-height: 56px;
+                padding: 6px 16px;
             }
 
-            .header-button:active {
-                background-color: rgba(30, 30, 30, 0.15);
-                transform: scale(0.95);
+            .chat-input-wrapper {
+                min-height: 40px;
+            }
+
+            .messages-display {
+                padding: 8px 16px 4px;
             }
         }
     </style>
@@ -626,7 +667,7 @@
             </div>
         </main>
 
-        <!-- Input Area -->
+        <!-- CORREÇÃO: Input Area com estrutura otimizada para mobile -->
         <div class="chat-input-area">
             <div class="chat-input-wrapper">
                 <textarea class="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
