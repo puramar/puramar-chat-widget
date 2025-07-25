@@ -1,4 +1,4 @@
-// Puramar Chat Widget - Versão Corrigida para Bugs de UX
+// Puramar Chat Widget - Correções Mínimas UX
 (function() {
     "use strict";
     
@@ -12,20 +12,19 @@
         userId: null,
         history: [],
         currentView: "home",
-        isTyping: false,
-        isInitialized: false
+        isTyping: false
     };
     
     // Elementos DOM
     var elements = {};
     
-    // CORREÇÃO: Previne conflitos com outros scripts
-    function safeExecute(fn, context) {
+    // CORREÇÃO: Função segura apenas para operações críticas
+    function safeExecute(fn) {
         try {
-            return fn.call(context);
+            return fn();
         } catch (e) {
-            console.warn("Erro seguro capturado:", e.message);
-            return null;
+            console.warn("Chat - Operação segura falhou:", e.message);
+            return false;
         }
     }
     
@@ -34,20 +33,11 @@
         return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
     
-    // CORREÇÃO: Inicialização mais robusta
+    // MANTIDO: Inicialização original que funcionava
     function initChat() {
         console.log("Iniciando elementos do chat");
         
-        // Aguarda um pouco para evitar conflitos com Shopify
-        setTimeout(function() {
-            safeExecute(function() {
-                initChatElements();
-            });
-        }, 500);
-    }
-    
-    function initChatElements() {
-        // Busca elementos com verificação de segurança
+        // Busca elementos
         elements = {
             chatInput: document.querySelector(".chat-input"),
             sendButton: document.querySelector(".icon-send-button"),
@@ -60,7 +50,6 @@
             closeButton: document.querySelector(".close-btn"),
             headerContentHome: document.querySelector(".header-content-home"),
             headerContentChat: document.querySelector(".header-content-chat"),
-            chatBody: document.querySelector(".chat-body"),
             chatInputArea: document.querySelector(".chat-input-area")
         };
         
@@ -74,16 +63,15 @@
         });
         
         if (!elements.chatInput || !elements.sendButton || !elements.homeView || !elements.chatView) {
-            console.error("Elementos essenciais não encontrados - tentando novamente em 1s");
-            setTimeout(initChatElements, 1000);
+            console.error("Elementos essenciais não encontrados");
             return;
         }
         
         // Inicializa estado
         chatState.userId = generateUserId();
         
-        // CORREÇÃO: Força elementos visíveis
-        ensureElementsVisible();
+        // CORREÇÃO: Garante input sempre visível
+        ensureInputVisible();
         
         // Configura event listeners
         setupEventListeners();
@@ -94,113 +82,72 @@
         // Garante que inicia na view home
         changeView("home");
         
-        // CORREÇÃO: Previne zoom em iOS
-        preventIOSZoom();
-        
-        chatState.isInitialized = true;
         console.log("Chat configurado com sucesso");
     }
     
-    // CORREÇÃO: Garante que elementos críticos estão visíveis
-    function ensureElementsVisible() {
-        // Força input area sempre visível
-        if (elements.chatInputArea) {
-            elements.chatInputArea.style.display = "block";
-            elements.chatInputArea.style.visibility = "visible";
-            elements.chatInputArea.style.opacity = "1";
-        }
-        
-        // Força input sempre visível
+    // CORREÇÃO: Força input sempre visível
+    function ensureInputVisible() {
         if (elements.chatInput) {
             elements.chatInput.style.display = "block";
             elements.chatInput.style.visibility = "visible";
             elements.chatInput.style.opacity = "1";
         }
         
-        // Força botão de envio posicionado
-        if (elements.sendButton) {
-            elements.sendButton.style.position = "relative";
+        if (elements.chatInputArea) {
+            elements.chatInputArea.style.display = "block";
+            elements.chatInputArea.style.visibility = "visible";
         }
     }
     
-    // CORREÇÃO: Previne zoom em iOS
-    function preventIOSZoom() {
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            // Previne zoom ao focar input
-            if (elements.chatInput) {
-                elements.chatInput.addEventListener("focus", function() {
-                    this.style.fontSize = "16px";
-                    this.style.transformOrigin = "center";
-                    // Força viewport estável
-                    var viewport = document.querySelector('meta[name="viewport"]');
-                    if (viewport) {
-                        var originalContent = viewport.getAttribute('content');
-                        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-                        
-                        // Restaura depois
-                        this.addEventListener("blur", function() {
-                            if (originalContent) {
-                                viewport.setAttribute('content', originalContent);
-                            }
-                        }, { once: true });
-                    }
-                });
-            }
-        }
-    }
-    
-    // CORREÇÃO: Função para trocar views com verificações extras
+    // MANTIDO: Função original de mudança de view
     function changeView(viewName) {
         console.log("Mudando para view:", viewName);
         
-        if (!chatState.isInitialized) {
-            console.warn("Chat não inicializado ainda");
-            return;
+        // Esconde todas as views primeiro
+        if (elements.homeView) elements.homeView.style.display = "none";
+        if (elements.chatView) elements.chatView.style.display = "none";
+        if (elements.headerContentHome) elements.headerContentHome.style.display = "none";
+        if (elements.headerContentChat) elements.headerContentChat.style.display = "none";
+        
+        if (viewName === "home") {
+            // Mostra home view
+            if (elements.homeView) elements.homeView.style.display = "flex";
+            if (elements.headerContentHome) elements.headerContentHome.style.display = "flex";
+            
+            // Limpa mensagens ao voltar para home
+            if (elements.messagesDisplay) {
+                elements.messagesDisplay.innerHTML = "";
+            }
+            chatState.history = [];
+            
+            // Esconde indicador de digitação
+            showTypingIndicator(false);
+            
+        } else if (viewName === "chat") {
+            // Mostra chat view
+            if (elements.chatView) elements.chatView.style.display = "flex";
+            if (elements.headerContentChat) elements.headerContentChat.style.display = "flex";
+            
+            // CORREÇÃO: Garante input visível no chat
+            ensureInputVisible();
+            
+            // Foca no input após delay
+            setTimeout(function() {
+                if (elements.chatInput) {
+                    // CORREÇÃO: Previne zoom no iOS
+                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        elements.chatInput.style.fontSize = "16px";
+                    }
+                    elements.chatInput.focus();
+                }
+            }, 100);
         }
         
-        safeExecute(function() {
-            // Esconde todas as views primeiro
-            if (elements.homeView) elements.homeView.style.display = "none";
-            if (elements.chatView) elements.chatView.style.display = "none";
-            if (elements.headerContentHome) elements.headerContentHome.style.display = "none";
-            if (elements.headerContentChat) elements.headerContentChat.style.display = "none";
-            
-            if (viewName === "home") {
-                // Mostra home view
-                if (elements.homeView) elements.homeView.style.display = "flex";
-                if (elements.headerContentHome) elements.headerContentHome.style.display = "flex";
-                
-                // Limpa mensagens ao voltar para home
-                if (elements.messagesDisplay) {
-                    elements.messagesDisplay.innerHTML = "";
-                }
-                chatState.history = [];
-                
-                // Esconde indicador de digitação
-                showTypingIndicator(false);
-                
-            } else if (viewName === "chat") {
-                // Mostra chat view
-                if (elements.chatView) elements.chatView.style.display = "flex";
-                if (elements.headerContentChat) elements.headerContentChat.style.display = "flex";
-                
-                // CORREÇÃO: Garante input visível no chat
-                ensureElementsVisible();
-                
-                // Foca no input após delay
-                setTimeout(function() {
-                    if (elements.chatInput && elements.chatInput.style.display !== "none") {
-                        elements.chatInput.focus();
-                    }
-                }, 200);
-            }
-            
-            chatState.currentView = viewName;
-            console.log("View alterada para:", viewName);
-        });
+        chatState.currentView = viewName;
+        console.log("View alterada para:", viewName);
     }
     
-    // Função para renderizar Markdown simples
+    // MANTIDO: Função original de renderizar Markdown
     function renderMarkdown(text) {
         // Converte links em formato **[texto](url)** para HTML
         text = text.replace(/\*\*\[([^\]]+)\]\(([^)]+)\)\*\*/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
@@ -214,64 +161,57 @@
         return text;
     }
     
-    // Função para adicionar mensagem
+    // MANTIDO: Função original de adicionar mensagem
     function addMessage(text, sender) {
         console.log("Adicionando mensagem:", sender);
         
-        if (!elements.messagesDisplay) {
-            console.warn("messagesDisplay não encontrado");
-            return;
+        if (!elements.messagesDisplay) return;
+        
+        var messageGroup = document.createElement("div");
+        messageGroup.className = "message-group " + sender;
+        
+        var messageBubble = document.createElement("div");
+        messageBubble.className = "message-bubble " + sender;
+        
+        // Renderiza Markdown apenas para mensagens do agente
+        if (sender === "agent") {
+            messageBubble.innerHTML = renderMarkdown(text);
+        } else {
+            messageBubble.textContent = text;
         }
         
-        safeExecute(function() {
-            var messageGroup = document.createElement("div");
-            messageGroup.className = "message-group " + sender;
-            
-            var messageBubble = document.createElement("div");
-            messageBubble.className = "message-bubble " + sender;
-            
-            // Renderiza Markdown apenas para mensagens do agente
-            if (sender === "agent") {
-                messageBubble.innerHTML = renderMarkdown(text);
-            } else {
-                messageBubble.textContent = text;
+        messageGroup.appendChild(messageBubble);
+        elements.messagesDisplay.appendChild(messageGroup);
+        
+        // Scroll para baixo
+        setTimeout(function() {
+            if (elements.messagesDisplay) {
+                elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
             }
-            
-            messageGroup.appendChild(messageBubble);
-            elements.messagesDisplay.appendChild(messageGroup);
-            
-            // Scroll para baixo com delay
-            setTimeout(function() {
-                if (elements.messagesDisplay) {
-                    elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
-                }
-            }, 100);
-            
-            // Adiciona ao histórico
-            chatState.history.push({
-                role: sender === "user" ? "user" : "model",
-                parts: [text]
-            });
+        }, 50);
+        
+        // Adiciona ao histórico
+        chatState.history.push({
+            role: sender === "user" ? "user" : "model",
+            parts: [text]
         });
     }
     
-    // Função para mostrar/esconder indicador de digitação
+    // MANTIDO: Função original de indicador de digitação
     function showTypingIndicator(show) {
         if (!elements.typingIndicator) return;
         
-        safeExecute(function() {
-            elements.typingIndicator.style.display = show ? "block" : "none";
-            chatState.isTyping = show;
-            
-            if (show && elements.messagesDisplay) {
-                setTimeout(function() {
-                    elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
-                }, 100);
-            }
-        });
+        elements.typingIndicator.style.display = show ? "block" : "none";
+        chatState.isTyping = show;
+        
+        if (show && elements.messagesDisplay) {
+            setTimeout(function() {
+                elements.messagesDisplay.scrollTop = elements.messagesDisplay.scrollHeight;
+            }, 50);
+        }
     }
     
-    // CORREÇÃO: Função para processar sequência de mensagens com melhor timing
+    // CORREÇÃO: Função de sequência melhorada
     function processMessageSequence(messages, delay = 2500) {
         if (!messages || messages.length === 0) return;
         
@@ -279,7 +219,6 @@
             setTimeout(function() {
                 showTypingIndicator(true);
                 
-                // Delay menor para mostrar "digitando"
                 setTimeout(function() {
                     showTypingIndicator(false);
                     addMessage(message, "agent");
@@ -289,7 +228,7 @@
         });
     }
     
-    // CORREÇÃO: Função para enviar mensagem com melhor error handling
+    // MANTIDO + CORREÇÃO: Função de enviar mensagem melhorada
     function sendMessage(text) {
         if (!text) text = elements.chatInput ? elements.chatInput.value.trim() : "";
         if (!text) return;
@@ -318,7 +257,7 @@
             message_history: chatState.history
         };
         
-        // CORREÇÃO: Timeout mais curto e melhor error handling
+        // CORREÇÃO: Melhor handling de timeout
         var xhr = new XMLHttpRequest();
         xhr.open("POST", API_URL, true);
         xhr.setRequestHeader("Content-Type", "application/json");
@@ -328,7 +267,7 @@
             if (xhr.readyState === 4) {
                 showTypingIndicator(false);
                 
-                var reply = "Estou com dificuldades técnicas no momento. Aguarde um minutinho e tente novamente! 🤍";
+                var reply = "Estou com dificuldades técnicas no momento. Tente novamente em alguns instantes! 🤍";
                 var sequence = [];
                 
                 if (xhr.status === 200) {
@@ -351,7 +290,7 @@
                 } else if (xhr.status === 0) {
                     reply = "Sem conexão com o servidor. Verifique sua internet! 🤍";
                 } else if (xhr.status >= 500) {
-                    reply = "Nosso servidor está acordando... Tente novamente em 30 segundos! 🤍";
+                    reply = "Nosso servidor pode estar 'acordando'... Tente novamente em 30 segundos! 🤍";
                 } else {
                     console.error("Erro na requisição:", xhr.status, xhr.statusText);
                     reply = "Serviço temporariamente indisponível. Tente em alguns minutos! 🤍";
@@ -369,7 +308,7 @@
         
         xhr.ontimeout = function() {
             showTypingIndicator(false);
-            addMessage("O servidor está demorando para responder. Nosso sistema pode estar 'acordando' - tente novamente em 1 minuto! 🤍", "agent");
+            addMessage("O servidor está demorando para responder. Pode estar 'acordando' - tente novamente em 1 minuto! 🤍", "agent");
         };
         
         xhr.onerror = function() {
@@ -380,32 +319,28 @@
         xhr.send(JSON.stringify(data));
     }
     
-    // Função para atualizar botão de envio
+    // MANTIDO: Função original de atualizar botão
     function updateSendButton() {
         if (!elements.sendButton || !elements.chatInput) return;
         
-        safeExecute(function() {
-            var hasText = elements.chatInput.value.trim().length > 0;
-            
-            if (hasText) {
-                elements.sendButton.classList.add("visible");
-            } else {
-                elements.sendButton.classList.remove("visible");
-            }
-        });
+        var hasText = elements.chatInput.value.trim().length > 0;
+        
+        if (hasText) {
+            elements.sendButton.classList.add("visible");
+        } else {
+            elements.sendButton.classList.remove("visible");
+        }
     }
     
-    // CORREÇÃO: Setup do input mais robusto
+    // MANTIDO + CORREÇÃO: Setup do input melhorado
     function setupInput() {
         if (!elements.chatInput) return;
         
         // Auto-resize do textarea
         elements.chatInput.addEventListener("input", function() {
-            safeExecute(function() {
-                this.style.height = "auto";
-                this.style.height = Math.min(this.scrollHeight, 100) + "px";
-                updateSendButton();
-            }.bind(this));
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 100) + "px";
+            updateSendButton();
         });
         
         // Enter para enviar
@@ -416,27 +351,46 @@
             }
         });
         
-        // CORREÇÃO: Previne perda de foco
+        // CORREÇÃO: Previne zoom no iOS
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            elements.chatInput.addEventListener("focus", function() {
+                this.style.fontSize = "16px";
+                
+                // CORREÇÃO: Controla viewport temporariamente
+                var viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    var originalContent = viewport.getAttribute('content');
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                    
+                    // Restaura ao sair do foco
+                    this.addEventListener("blur", function() {
+                        if (originalContent) {
+                            viewport.setAttribute('content', originalContent);
+                        }
+                    }, { once: true });
+                }
+            });
+        }
+        
+        // CORREÇÃO: Força input sempre visível
         elements.chatInput.addEventListener("blur", function() {
-            // Re-foca após pequeno delay se estiver na view chat
+            var self = this;
             setTimeout(function() {
-                if (chatState.currentView === "chat" && document.activeElement !== elements.chatInput) {
-                    // Só re-foca se não for por causa de clique em botão
-                    if (!document.activeElement || !document.activeElement.classList.contains('header-button')) {
-                        elements.chatInput.focus();
-                    }
+                ensureInputVisible();
+                // Re-foca se ainda estiver na view chat e não for por clique em botão
+                if (chatState.currentView === "chat" && !document.activeElement.classList.contains('header-button')) {
+                    self.focus();
                 }
             }, 100);
         });
     }
     
-    // CORREÇÃO: Event listeners com melhor error handling
+    // MANTIDO: Event listeners originais
     function setupEventListeners() {
         // Botão de envio
         if (elements.sendButton) {
             elements.sendButton.addEventListener("click", function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 console.log("Botão enviar clicado");
                 sendMessage();
             });
@@ -446,7 +400,6 @@
         elements.suggestionButtons.forEach(function(button) {
             button.addEventListener("click", function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 var suggestion = this.getAttribute("data-suggestion");
                 console.log("Sugestão clicada:", suggestion);
                 if (suggestion) {
@@ -459,7 +412,6 @@
         if (elements.backButton) {
             elements.backButton.addEventListener("click", function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 console.log("Botão voltar clicado");
                 changeView("home");
             });
@@ -469,7 +421,6 @@
         if (elements.closeButton) {
             elements.closeButton.addEventListener("click", function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 console.log("Botão fechar clicado");
                 
                 safeExecute(function() {
@@ -486,44 +437,34 @@
         window.addEventListener("message", function(event) {
             if (event.data === "focus-input" && elements.chatInput) {
                 safeExecute(function() {
+                    ensureInputVisible();
                     elements.chatInput.focus();
                 });
             }
         });
     }
     
-    // Função para debug
+    // MANTIDO: Função de debug original
     function debugInfo() {
         return {
             currentView: chatState.currentView,
             userId: chatState.userId,
             historyLength: chatState.history.length,
             isTyping: chatState.isTyping,
-            isInitialized: chatState.isInitialized,
             elementsFound: Object.keys(elements).filter(key => !!elements[key]).length,
             apiUrl: API_URL,
-            viewport: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                zoom: window.devicePixelRatio
-            }
+            inputVisible: elements.chatInput ? elements.chatInput.style.display !== "none" : false
         };
     }
     
     // Expõe função de debug globalmente
     window.puramarChatDebug = debugInfo;
     
-    // CORREÇÃO: Inicialização mais segura
-    function safeInit() {
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initChat);
-        } else {
-            // Aguarda um pouco para evitar conflitos
-            setTimeout(initChat, 300);
-        }
+    // MANTIDO: Inicialização original
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initChat);
+    } else {
+        initChat();
     }
-    
-    // Inicializa quando seguro
-    safeInit();
     
 })();
