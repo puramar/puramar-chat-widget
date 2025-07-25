@@ -442,11 +442,13 @@
                 padding-bottom: 4px;
             }
             
-            .message-bubble {
-                padding: 8px 14px;
-                font-size: 14px;
-                max-width: 90%;
-            }
+         .message-bubble {
+    word-break: normal;         /* Não quebra palavras curtas */
+    overflow-wrap: break-word;  /* Quebra só quando necessário */
+    hyphens: none;             /* Remove hifenização */
+    white-space: pre-wrap;     /* Preserva espaços naturais */
+    line-height: 1.4;         /* Espaçamento adequado */
+}
             
             .typing-indicator {
                 padding: 8px 16px;
@@ -662,7 +664,7 @@
             <div class="chat-view">
                 <div class="messages-display"></div>
                 <div class="typing-indicator">
-                    <span class="typing-text">Puramar AI está escrevendo...</span>
+                    <span class="typing-text">Puramar está escrevendo...</span>
                 </div>
             </div>
         </main>
