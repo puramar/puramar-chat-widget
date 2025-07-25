@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Puramar Chat</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
@@ -28,6 +28,10 @@
             background-color: transparent;
             height: 100%;
             overflow: hidden;
+            /* CORREÇÃO ANDROID: Previne zoom e scroll */
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .chat-widget-window {
@@ -36,11 +40,17 @@
             background-color: var(--puramar-background-light);
             display: flex;
             flex-direction: column;
+            /* CORREÇÃO ANDROID: Layout mais estável */
+            position: relative;
+            overflow: hidden;
         }
 
         /* Header */
         .header-container {
             flex-shrink: 0;
+            /* CORREÇÃO ANDROID: Evita que header suma */
+            position: relative;
+            z-index: 100;
         }
 
         .chat-window-header {
@@ -52,6 +62,8 @@
             color: var(--puramar-text-dark);
             position: relative;
             min-height: 64px;
+            /* CORREÇÃO ANDROID: Header mais estável */
+            flex-shrink: 0;
         }
 
         .header-logo {
@@ -81,6 +93,9 @@
             border-radius: 8px;
             transition: all 0.2s ease;
             flex-shrink: 0;
+            /* CORREÇÃO ANDROID: Melhor área de toque */
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .header-button:hover {
@@ -123,6 +138,9 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
+            /* CORREÇÃO ANDROID: Melhor handling de altura */
+            overflow: hidden;
+            position: relative;
         }
 
         .home-view, .chat-view {
@@ -176,6 +194,9 @@
             min-height: 60px;
             word-wrap: break-word;
             white-space: normal;
+            /* CORREÇÃO ANDROID: Melhor área de toque */
+            min-height: 48px;
+            touch-action: manipulation;
         }
 
         .suggestion-button:hover {
@@ -206,6 +227,8 @@
             gap: 4px;
             -webkit-overflow-scrolling: touch;
             min-height: 0;
+            /* CORREÇÃO ANDROID: Evita problemas de scroll */
+            position: relative;
         }
 
         .message-group {
@@ -227,8 +250,11 @@
             padding: 10px 16px;
             border-radius: 20px;
             font-size: 15px;
-            line-height: 1.5;
-            word-wrap: break-word;
+            line-height: 1.4;
+            word-break: normal;
+            overflow-wrap: break-word;
+            hyphens: none;
+            white-space: pre-wrap;
         }
 
         .message-bubble.user {
@@ -280,57 +306,105 @@
             50% { transform: translateY(-2px); }
         }
 
-        /* Input Area - CORREÇÃO PRINCIPAL */
+        /* CORREÇÃO ANDROID: Input Area Totalmente Refatorada */
         .chat-input-area {
             padding: 12px 16px;
             background-color: var(--puramar-background-light);
-            flex-shrink: 0;
             border-top: 1px solid var(--puramar-border-color);
-            /* CORREÇÃO: Garante que input sempre está visível */
-            position: relative;
-            z-index: 10;
+            /* CORREÇÃO ANDROID: Posicionamento forçado */
+            position: relative !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 200 !important;
+            /* CORREÇÃO ANDROID: Garante que sempre existe */
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            /* CORREÇÃO ANDROID: Altura mínima garantida */
+            min-height: 72px !important;
+            max-height: 120px;
+            flex-shrink: 0;
+            /* CORREÇÃO ANDROID: Anti-bug de desaparecimento */
+            will-change: height;
+            contain: layout;
         }
 
         .chat-input-wrapper {
-            display: flex;
+            display: flex !important;
             align-items: flex-end;
             background-color: var(--puramar-background-grey);
             border-radius: 16px;
-            padding: 8px;
-            /* CORREÇÃO: Altura mínima para mobile */
-            min-height: 48px;
+            padding: 8px 12px;
+            /* CORREÇÃO ANDROID: Altura forçada */
+            min-height: 48px !important;
+            position: relative;
+            /* CORREÇÃO ANDROID: Garante visibilidade */
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
         .chat-input-wrapper textarea {
             flex: 1;
-            border: none;
-            background: transparent;
-            padding: 4px 8px;
-            font-size: 15px;
+            border: none !important;
+            background: transparent !important;
+            padding: 8px !important;
+            font-size: 16px !important; /* Previne zoom no iOS e Android */
             font-family: 'Poppins', sans-serif;
             resize: none;
-            max-height: 100px;
-            line-height: 1.5;
+            max-height: 80px;
+            line-height: 1.4;
             color: var(--puramar-text-dark);
-            outline: none;
-            /* CORREÇÃO: Altura mínima para mobile */
-            min-height: 32px;
+            outline: none !important;
+            /* CORREÇÃO ANDROID: Altura e visibilidade forçadas */
+            min-height: 32px !important;
+            height: 32px !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            /* CORREÇÃO ANDROID: Previne bugs de teclado */
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 0;
+            /* CORREÇÃO ANDROID: Melhor comportamento de texto */
+            word-break: normal;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
         }
 
         .chat-input-wrapper textarea::placeholder {
             color: var(--puramar-text-light);
+            opacity: 0.7;
+        }
+
+        /* CORREÇÃO ANDROID: Força input visível em qualquer situação */
+        .chat-input-wrapper textarea:focus {
+            border: none !important;
+            outline: none !important;
+            background: transparent !important;
+            /* CORREÇÃO ANDROID: Garante que fica visível quando em foco */
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 1;
         }
 
         .icon-send-button {
             background: none;
             border: none;
-            padding: 4px;
+            padding: 6px;
             cursor: pointer;
             color: var(--puramar-primary-color);
             transition: all 0.2s ease;
             opacity: 0;
             transform: scale(0.8);
             pointer-events: none;
+            /* CORREÇÃO ANDROID: Melhor área de toque */
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .icon-send-button.visible {
@@ -366,27 +440,38 @@
             background: var(--puramar-text-light);
         }
 
-        /* CORREÇÃO PRINCIPAL: Mobile Responsivo Melhorado */
+        /* CORREÇÃO ANDROID: Mobile Responsivo Melhorado */
         @media screen and (max-width: 480px) {
+            body, html {
+                /* CORREÇÃO ANDROID: Melhor handling de viewport */
+                height: 100vh !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+                position: relative;
+                -webkit-overflow-scrolling: touch;
+            }
+
             .chat-widget-window {
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
-                /* CORREÇÃO: Layout mais estável */
-                display: flex;
-                flex-direction: column;
+                width: 100vw !important;
+                height: 100vh !important;
+                max-height: 100vh !important;
+                position: relative;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
             }
             
             .header-container {
                 padding-top: env(safe-area-inset-top, 0px);
-                /* CORREÇÃO: Header fixo no mobile */
                 position: relative;
-                z-index: 20;
+                z-index: 100;
+                flex-shrink: 0;
             }
             
             .chat-window-header {
                 padding: 12px 16px;
                 min-height: 60px;
+                flex-shrink: 0;
             }
             
             .header-logo {
@@ -398,14 +483,16 @@
             }
 
             .header-button {
-                width: 36px;
-                height: 36px;
+                width: 44px !important;
+                height: 44px !important;
                 padding: 6px;
+                min-width: 44px !important;
+                min-height: 44px !important;
             }
 
             .header-left, .header-right {
-                width: 36px;
-                height: 36px;
+                width: 44px;
+                height: 44px;
             }
 
             .header-button svg {
@@ -433,74 +520,100 @@
                 font-size: 14px;
                 margin-bottom: 10px;
                 border-radius: 12px;
-                min-height: 56px;
+                min-height: 48px;
+                touch-action: manipulation;
             }
             
             .messages-display {
-                padding: 12px 16px;
-                /* CORREÇÃO: Garante espaço para input no mobile */
-                padding-bottom: 4px;
+                padding: 12px 16px 4px;
             }
             
-         .message-bubble {
-    word-break: normal;         /* Não quebra palavras curtas */
-    overflow-wrap: break-word;  /* Quebra só quando necessário */
-    hyphens: none;             /* Remove hifenização */
-    white-space: pre-wrap;     /* Preserva espaços naturais */
-    line-height: 1.4;         /* Espaçamento adequado */
-}
+            .message-bubble {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
             
             .typing-indicator {
                 padding: 8px 16px;
                 font-size: 13px;
             }
             
-            /* CORREÇÃO PRINCIPAL: Input area mobile */
+            /* CORREÇÃO ANDROID: Input area mobile FORÇADA */
             .chat-input-area {
-                padding: 8px 16px;
-                padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px));
-                /* CORREÇÃO: Garante que input está sempre acessível */
-                position: relative;
-                z-index: 30;
-                background-color: var(--puramar-background-light);
-                border-top: 1px solid var(--puramar-border-color);
-                /* CORREÇÃO: Altura mínima garantida */
-                min-height: 64px;
+                padding: 8px 16px !important;
+                padding-bottom: calc(8px + env(safe-area-inset-bottom, 8px)) !important;
+                /* CORREÇÃO ANDROID: Posicionamento absoluto no mobile */
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                z-index: 9999 !important;
+                background-color: var(--puramar-background-light) !important;
+                border-top: 1px solid var(--puramar-border-color) !important;
+                /* CORREÇÃO ANDROID: Altura forçada no mobile */
+                min-height: 72px !important;
+                max-height: 120px !important;
+                /* CORREÇÃO ANDROID: Força visibilidade absoluta */
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             }
             
             .chat-input-wrapper {
-                padding: 8px 12px;
-                /* CORREÇÃO: Altura mínima para área de toque */
-                min-height: 48px;
-                margin-bottom: 0;
+                padding: 8px 12px !important;
+                min-height: 48px !important;
+                margin: 0 !important;
+                /* CORREÇÃO ANDROID: Força visibilidade do wrapper */
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                background-color: var(--puramar-background-grey) !important;
             }
             
             .chat-input-wrapper textarea {
-                font-size: 16px; /* Previne zoom no iOS */
-                padding: 8px;
-                /* CORREÇÃO: Altura adequada para mobile */
-                min-height: 32px;
-                line-height: 1.4;
+                font-size: 16px !important; /* Previne zoom */
+                padding: 8px !important;
+                min-height: 32px !important;
+                height: 32px !important;
+                line-height: 1.4 !important;
+                /* CORREÇÃO ANDROID: Força visibilidade do textarea */
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                border: none !important;
+                outline: none !important;
+                background: transparent !important;
+                /* CORREÇÃO ANDROID: Melhor comportamento no Android */
+                -webkit-user-select: text;
+                user-select: text;
+                -webkit-touch-callout: default;
+                touch-action: manipulation;
             }
 
-            /* CORREÇÃO: Garante layout estável quando teclado abre */
+            /* CORREÇÃO ANDROID: Ajuste do chat-view para acomodar input fixo */
             .chat-view {
-                /* CORREÇÃO: Permite que o layout se ajuste */
-                height: 100%;
-                max-height: 100vh;
-                max-height: 100dvh;
+                height: calc(100vh - 60px - 72px) !important; /* header + input */
+                max-height: calc(100vh - 60px - 72px) !important;
+                overflow: hidden;
             }
 
             .chat-body {
-                /* CORREÇÃO: Flexbox que se adapta ao teclado */
                 flex: 1;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
+                height: calc(100vh - 60px - 72px) !important;
+                max-height: calc(100vh - 60px - 72px) !important;
+                overflow: hidden;
+                padding-bottom: 0 !important;
+            }
+
+            .messages-display {
+                padding-bottom: 20px !important;
+                max-height: calc(100vh - 60px - 72px - 40px) !important;
             }
         }
 
-        /* Telas muito pequenas */
+        /* CORREÇÃO ANDROID: Telas muito pequenas */
         @media screen and (max-width: 360px) {
             .home-view h1 {
                 font-size: 18px;
@@ -509,83 +622,98 @@
             .suggestion-button {
                 padding: 12px 14px;
                 font-size: 13px;
-                min-height: 52px;
+                min-height: 44px;
             }
 
             .header-button {
-                width: 32px;
-                height: 32px;
-                padding: 4px;
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
             }
 
             .header-left, .header-right {
-                width: 32px;
-                height: 32px;
+                width: 40px;
+                height: 40px;
             }
 
-            .header-button svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            /* CORREÇÃO: Input em telas muito pequenas */
             .chat-input-area {
-                min-height: 60px;
-                padding: 6px 12px;
-                padding-bottom: calc(6px + env(safe-area-inset-bottom, 6px));
+                min-height: 68px !important;
+                padding: 6px 12px !important;
             }
 
             .chat-input-wrapper {
-                min-height: 44px;
-                padding: 6px 10px;
+                min-height: 44px !important;
+                padding: 6px 10px !important;
             }
         }
 
-        /* CORREÇÃO: Landscape mobile */
+        /* CORREÇÃO ANDROID: Landscape mobile */
         @media screen and (max-height: 500px) and (orientation: landscape) {
             .home-content {
-                padding: 12px 16px 8px;
+                padding: 8px 16px 4px;
             }
             
             .home-view h1 {
-                font-size: 18px;
+                font-size: 16px;
                 margin-bottom: 4px;
             }
             
             .home-view p {
-                font-size: 13px;
-                margin-bottom: 16px;
+                font-size: 12px;
+                margin-bottom: 12px;
             }
             
             .suggestion-button {
-                padding: 10px 14px;
-                font-size: 13px;
-                margin-bottom: 8px;
-                min-height: 44px;
-            }
-
-            .header-button {
-                width: 32px;
-                height: 32px;
-            }
-
-            .header-left, .header-right {
-                width: 32px;
-                height: 32px;
-            }
-
-            /* CORREÇÃO: Input em landscape */
-            .chat-input-area {
-                min-height: 56px;
-                padding: 6px 16px;
-            }
-
-            .chat-input-wrapper {
+                padding: 8px 12px;
+                font-size: 12px;
+                margin-bottom: 6px;
                 min-height: 40px;
             }
 
+            .chat-input-area {
+                min-height: 60px !important;
+                padding: 4px 16px !important;
+            }
+
+            .chat-input-wrapper {
+                min-height: 40px !important;
+                padding: 4px 8px !important;
+            }
+
             .messages-display {
-                padding: 8px 16px 4px;
+                padding: 4px 16px 2px;
+            }
+
+            .chat-view {
+                height: calc(100vh - 50px - 60px) !important;
+            }
+
+            .chat-body {
+                height: calc(100vh - 50px - 60px) !important;
+            }
+        }
+
+        /* CORREÇÃO ANDROID: Forçar input visível em qualquer Android */
+        @media screen and (max-width: 768px) {
+            .chat-input-area {
+                /* FORÇAR VISIBILIDADE MÁXIMA */
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 2147483647 !important;
+            }
+            
+            .chat-input-wrapper {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .chat-input-wrapper textarea {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
         }
     </style>
@@ -593,6 +721,36 @@
 <body>
     <script>
         console.log("Puramar Chat HTML iniciado");
+        
+        // CORREÇÃO ANDROID: Força input visível na inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                var inputArea = document.querySelector('.chat-input-area');
+                var inputWrapper = document.querySelector('.chat-input-wrapper');
+                var textarea = document.querySelector('.chat-input-wrapper textarea');
+                
+                if (inputArea) {
+                    inputArea.style.display = 'block';
+                    inputArea.style.visibility = 'visible';
+                    inputArea.style.opacity = '1';
+                    console.log('✅ Android: Input area forçada a aparecer');
+                }
+                
+                if (inputWrapper) {
+                    inputWrapper.style.display = 'flex';
+                    inputWrapper.style.visibility = 'visible';
+                    inputWrapper.style.opacity = '1';
+                    console.log('✅ Android: Input wrapper forçado a aparecer');
+                }
+                
+                if (textarea) {
+                    textarea.style.display = 'block';
+                    textarea.style.visibility = 'visible';
+                    textarea.style.opacity = '1';
+                    console.log('✅ Android: Textarea forçado a aparecer');
+                }
+            }, 500);
+        });
     </script>
 
     <div class="chat-widget-window">
@@ -669,10 +827,15 @@
             </div>
         </main>
 
-        <!-- CORREÇÃO: Input Area com estrutura otimizada para mobile -->
-        <div class="chat-input-area">
-            <div class="chat-input-wrapper">
-                <textarea class="chat-input" placeholder="Digite sua mensagem..." rows="1"></textarea>
+        <!-- CORREÇÃO ANDROID: Input Area com estrutura forçada para Android -->
+        <div class="chat-input-area" style="display: block !important; visibility: visible !important; opacity: 1 !important;">
+            <div class="chat-input-wrapper" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
+                <textarea 
+                    class="chat-input" 
+                    placeholder="Digite sua mensagem..." 
+                    rows="1"
+                    style="display: block !important; visibility: visible !important; opacity: 1 !important; font-size: 16px !important;"
+                ></textarea>
                 <button type="button" class="icon-send-button" title="Enviar">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3.4,20.3,22.1,12,3.4,3.7A1,1,0,0,0,2,5.2V10l7.1,2L2,14v4.8A1,1,0,0,0,3.4,20.3Z"/>
